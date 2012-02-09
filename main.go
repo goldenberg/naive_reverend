@@ -34,7 +34,8 @@ func main() {
 
 	var correct, wrong uint
 	for d := range evalData {
-		class, _ := nb.Classify(d.Features)
+		class, p := nb.Classify(d.Features)
+		fmt.Println("Was:", d.Class, "Got:", class, "With p:", p)
 		if class == d.Class {
 			correct += 1
 		} else {

@@ -1,7 +1,6 @@
 package main
 
 import (
-`math`
 `fmt`
 )
 	
@@ -11,7 +10,7 @@ type Counter interface {
 	Incr(string)
 	Keys() []string
 	Sum() uint
-	Distribution() *Distribution
+	Distribution() *CounterDistribution
 }
 
 type MemCounter struct {
@@ -54,109 +53,9 @@ func (c *MemCounter) Sum() (result uint) {
 	return
 }
 
-func (c *MemCounter) Distribution() (*Distribution) {
-	logProbs := make(map[string]float64)
-	logSum := math.Log(float64(c.Sum()))
-
-	for _, k := range c.Keys() {
-		logProbs[k] = math.Log(float64(c.Get(k))) - logSum
-	}
-
-	//fmt.Println("mc.D logProbs:", logProbs)
-	d := &Distribution{logProbs}
-	//fmt.Println("&Dist:", d)
-	return d
+func (c *MemCounter) Distribution() (*CounterDistribution) {
+	fmt.Println("Counter:", c)
+	return &CounterDistribution{c}
 }
 
-type Distribution struct {
-	logProbabilities map[string]float64
-	counter *Counter
-}
 
-func NewDistribution() *Distribution {
-	return &Distribution{make(map[string]float64)}
-}
-
-func (d *Distribution) Get(k string) (float64) {
-	return math.Exp(d.LogGet(k))
-}
-
-// Return a list of keys for this counter
-func (d *Distribution) Keys() []string {
-	result := make([]string, 0, len(d.logProbabilities))
-
-	for k, _ := range d.logProbabilities {
-		result = append(result, k)
-	}
-
-	return result
-}
-
-func (d *Distribution) LogGet(k string) float64 {
-	logProb, ok := d.logProbabilities[k]
-	if ok {
-		return logProb
-	}
-	return 0.0
-}
-
-func (d *Distribution) LogSet(k string, v float64) {
-	//fmt.Println("k:", k, "v:", v, "d:", d)
-	d.logProbabilities[k] = v
-}
-
-func (d *Distribution) Multiply(o *Distribution) (result *Distribution) {
-	result = NewDistribution()
-	fmt.Println("Multiply d:", d, "o:", o)
-	for k := range mergeKeys(d.Keys(), o.Keys()) {
-		fmt.Println("LogGet d:", d.LogGet(k), "o:", d.LogGet(k))
-		result.LogSet(k, d.LogGet(k) + o.LogGet(k))
-	}
-	return
-}
-
-func (d *Distribution) Divide(o *Distribution) (result *Distribution) {
-	for k := range mergeKeys(d.Keys(), o.Keys()) {
-		result.LogSet(k, d.LogGet(k) - o.LogGet(k))
-	}
-	return
-}
-
-func (d *Distribution) ArgMax() (k string, probability float64) {
-	maxLogProb := math.Inf(-1)
-	var maxKey string
-	for testKey, logProb := range d.logProbabilities {
-		if logProb > maxLogProb {
-			maxKey = testKey
-			maxLogProb = maxLogProb
-		} else {
-			fmt.Println("Found logProb", logProb, "<", maxLogProb)
-		}
-	}
-	return maxKey, math.Exp(maxLogProb)
-}
-
-// Combine two sets of keys w/o duplicates
-// borrowed from mattj
-func mergeKeys(a, b []string) <-chan string {
-	out := make(chan string)
-
-	go func(out chan<- string) {
-		defer close(out)
-
-		seen := make(map[string]bool)
-
-		for _, k := range a {
-			out <- k
-			seen[k] = true
-		}
-
-		for _, k := range b {
-			if !seen[k] {
-				out <- k
-			}
-		}
-	}(out)
-
-	return out
-}

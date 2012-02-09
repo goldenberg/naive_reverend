@@ -1,11 +1,9 @@
 package main
 
-import counter "gnlp/counter"
-import frozencounter "gnlp/frozencounter"
-
+import `fmt`
 type NaiveBayes struct {
-	FeatureLogDistributions map[string]*frozencounter.Counter
-	ClassLogPrior           *frozencounter.Counter
+	FeatureCategoryCounters map[string]*MemCounter
+	ClassCounter *MemCounter
 }
 
 type Datum struct {
@@ -14,8 +12,8 @@ type Datum struct {
 }
 
 func Train(data chan *Datum) *NaiveBayes {
-	class := counter.New(0.0)
-	features := make(map[string]*counter.Counter)
+	class := New()
+	features := make(map[string]*MemCounter)
 
 	for datum := range data {
 		class.Incr(datum.Class)
@@ -23,7 +21,7 @@ func Train(data chan *Datum) *NaiveBayes {
 			dist, ok := features[f]
 
 			if !ok {
-				dist = counter.New(0.0)
+				dist = New()
 				features[f] = dist
 			}
 
@@ -31,36 +29,23 @@ func Train(data chan *Datum) *NaiveBayes {
 		}
 	}
 
-	class.LogNormalize()
-	for _, dist := range features {
-		dist.LogNormalize()
-	}
-
-	frozenFeatures := frozencounter.FreezeMap(features)
-
-	var keyset *frozencounter.KeySet
-	for _, dist := range frozenFeatures {
-		keyset = dist.Keys
-	}
-
-	frozenClass := frozencounter.FreezeWithKeySet(class, keyset)
-
-	return &NaiveBayes{FeatureLogDistributions: frozenFeatures, ClassLogPrior: frozenClass}
+	return &NaiveBayes{FeatureCategoryCounters: features, ClassCounter: class}
 }
 
 func (nb *NaiveBayes) Classify(features []string) (string, float64) {
-	score := nb.ClassLogPrior.Copy()
+	var estimator Distribution
+	estimator = nb.ClassCounter.Distribution()
+	fmt.Println("Prior:", estimator)
 
 	for _, f := range features {
-		dist, ok := nb.FeatureLogDistributions[f]
+		counter, ok := nb.FeatureCategoryCounters[f]
+		fmt.Println("Feature:", f, "Counter:", counter)
 		if ok {
-			score.Add(dist)
+			dist := counter.Distribution()
+			estimator = estimator.Multiply(dist)
+			fmt.Println("Estimator: ", estimator)
 		}
 	}
 
-	score.Exp()
-	score.Normalize()
-
-	c, probability := score.ArgMax()
-	return c, probability
+	return estimator.ArgMax()
 }

@@ -8,15 +8,16 @@ import (
 	`flag`
 	`io`
 	`rand`
+	model `naive_reverend/model`
 )
 
 func main() {
 	flag.Parse()
-	data := make(chan *Datum, 100)
+	data := make(chan *model.Datum, 100)
 	quit := make(chan bool)
 
-	trainData := make(chan *Datum, 1000000)
-	evalData := make(chan *Datum, 1000000)
+	trainData := make(chan *model.Datum, 1000000)
+	evalData := make(chan *model.Datum, 1000000)
 
 	go ReadData(os.Stdin, data, quit)
 
@@ -30,7 +31,7 @@ func main() {
 	close(trainData)
 	close(evalData)
 
-	nb := Train(trainData)
+	nb := model.Train(trainData)
 
 	var correct, wrong uint
 	for d := range evalData {
@@ -49,7 +50,7 @@ func main() {
 	<-quit
 }
 
-func ReadData(reader io.Reader, out chan *Datum, quit chan bool) {
+func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {
 	bufReader, _ := bufio.NewReaderSize(reader, 1000000000)
 	i := 0
 	for {
@@ -61,7 +62,7 @@ func ReadData(reader io.Reader, out chan *Datum, quit chan bool) {
 			fmt.Print("uh-oh")
 			break
 		}
-		var x Datum
+		var x model.Datum
 		err = json.Unmarshal(line, &x)
 		if err != nil {
 			fmt.Print(err)

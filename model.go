@@ -1,9 +1,10 @@
 package main
 
 import `fmt`
+
 type NaiveBayes struct {
 	FeatureCategoryCounters map[string]*MemCounter
-	ClassCounter *MemCounter
+	ClassCounter            *MemCounter
 }
 
 type Datum struct {

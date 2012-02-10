@@ -3,7 +3,7 @@ package main
 import (
 // `fmt`
 )
-	
+
 type Counter interface {
 	Get(string) uint
 	Set(string, uint)
@@ -53,8 +53,6 @@ func (c *MemCounter) Sum() (result uint) {
 	return
 }
 
-func (c *MemCounter) Distribution() (*CounterDistribution) {
+func (c *MemCounter) Distribution() *CounterDistribution {
 	return &CounterDistribution{c}
 }
-
-

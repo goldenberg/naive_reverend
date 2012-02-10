@@ -1,7 +1,7 @@
 package main
 
 import (
-`fmt`
+// `fmt`
 )
 	
 type Counter interface {
@@ -54,7 +54,6 @@ func (c *MemCounter) Sum() (result uint) {
 }
 
 func (c *MemCounter) Distribution() (*CounterDistribution) {
-	fmt.Println("Counter:", c)
 	return &CounterDistribution{c}
 }
 

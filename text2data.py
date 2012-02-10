@@ -15,7 +15,7 @@ def main():
 			tokens.extend(tokenize(line))
 
 		print json.dumps({
-			'label': label,
+			'class': label,
 			'features': tokens,
 		})
 

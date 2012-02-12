@@ -5,7 +5,7 @@ all:
 	gomake -C model
 	gomake -C app
 
-install: all
+install:
 	gomake install -C counter 
 	gomake install -C model install
 	gomake install -C app 

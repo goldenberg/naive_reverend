@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=main
+TARG=naive_server
 GOFILES=\
 	main.go
 

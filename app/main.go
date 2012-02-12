@@ -21,17 +21,17 @@ func main() {
 
 	go ReadData(os.Stdin, data, quit)
 
+	nb := model.New()
+
 	for d := range data {
 		if rand.Float32() < 0.9 {
-			trainData <- d
+			nb.Train(d)
 		} else {
 			evalData <- d
 		}
 	}
 	close(trainData)
 	close(evalData)
-
-	nb := model.Train(trainData)
 
 	var correct, wrong uint
 	for d := range evalData {

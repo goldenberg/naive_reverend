@@ -20,25 +20,18 @@ func New() *NaiveBayes {
 	return &NaiveBayes{make(map[string]*counter.MemCounter), counter.New()}
 }
 
-func Train(data chan *Datum) *NaiveBayes {
-	class := counter.New()
-	features := make(map[string]*counter.MemCounter)
+func (nb *NaiveBayes) Train(datum *Datum) {
+	nb.ClassCounter.Incr(datum.Class)
+	for _, f := range datum.Features {
+		dist, ok := nb.FeatureCategoryCounters[f]
 
-	for datum := range data {
-		class.Incr(datum.Class)
-		for _, f := range datum.Features {
-			dist, ok := features[f]
-
-			if !ok {
-				dist = counter.New()
-				features[f] = dist
-			}
-
-			dist.Incr(datum.Class)
+		if !ok {
+			dist = counter.New()
+			nb.FeatureCategoryCounters[f] = dist
 		}
-	}
 
-	return &NaiveBayes{FeatureCategoryCounters: features, ClassCounter: class}
+		dist.Incr(datum.Class)
+	}
 }
 
 func (nb *NaiveBayes) Classify(features []string) (string, float64) {

@@ -21,7 +21,7 @@ func main() {
 	quitServer := make(chan bool)
 
 	trainData := make(chan *model.Datum, 100)
-	evalData := make(chan *model.Datum, 100)
+	evalData := make(chan *model.Datum, 200)
 
 	nb := model.New()
 
@@ -29,7 +29,7 @@ func main() {
 	go Serve(nb, quitServer)
 
 	for d := range data {
-		if rand.Float32() < 0.9 {
+		if rand.Float32() < 0.95 {
 			nb.Train(d)
 		} else {
 			evalData <- d
@@ -82,8 +82,13 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	query := req.FormValue("q")
 	features := strings.Split(query, ",")
-	prediction, _ := h.nb.Classify(features)
-	io.WriteString(w, prediction)
+	prediction, prob := h.nb.Classify(features)
+	output := map[string]interface{}{
+		"prediction": prediction,
+		"probability": prob,
+	}
+	jsonWriter := json.NewEncoder(w)
+	jsonWriter.Encode(output)
 	return
 }
 

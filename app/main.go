@@ -1,17 +1,17 @@
 package main
 
 import (
-	`fmt`
-	`strings`
-	`log`
 	`bufio`
-	`json`
-	`os`
+	"encoding/json"
 	`flag`
+	`fmt`
 	`io`
-	`rand`
-	`http`
+	`log`
+	"math/rand"
 	model `naive_reverend/model`
+	"net/http"
+	`os`
+	`strings`
 )
 
 func main() {

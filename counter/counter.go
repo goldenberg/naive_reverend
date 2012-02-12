@@ -1,7 +1,6 @@
 package main
 
-import (
-)
+import ()
 
 type Counter interface {
 	Get(string) uint

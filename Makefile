@@ -14,3 +14,7 @@ clean:
 	gomake -C counter clean
 	gomake -C model clean
 	gomake -C app clean
+
+gofmt:
+	gofmt -w *.go
+	gofmt -w */*.go

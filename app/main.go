@@ -38,7 +38,6 @@ func main() {
 	close(trainData)
 	close(evalData)
 
-
 	var correct, wrong uint
 	for d := range evalData {
 		class, _ := nb.Classify(d.Features)
@@ -72,11 +71,11 @@ func Serve(nb *model.NaiveBayes, quit chan bool) {
 }
 
 func HelloServer(w http.ResponseWriter, req *http.Request) {
-	io.WriteString(w, "hello, world!")	
+	io.WriteString(w, "hello, world!")
 }
 
 type ClassifyHandler struct {
-	 nb *model.NaiveBayes
+	nb *model.NaiveBayes
 }
 
 func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -85,7 +84,7 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	features := strings.Split(query, ",")
 	prediction, _ := h.nb.Classify(features)
 	io.WriteString(w, prediction)
-	return 
+	return
 }
 
 func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {

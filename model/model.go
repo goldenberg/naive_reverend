@@ -1,8 +1,8 @@
 package main
 
 import (
-// `fmt`
-counter `naive_reverend/counter`
+	// `fmt`
+	counter `naive_reverend/counter`
 )
 
 type NaiveBayes struct {
@@ -14,7 +14,6 @@ type Datum struct {
 	Class    string
 	Features []string
 }
-
 
 func New() *NaiveBayes {
 	return &NaiveBayes{make(map[string]*counter.MemCounter), counter.New()}

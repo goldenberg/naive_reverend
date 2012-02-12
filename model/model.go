@@ -1,10 +1,13 @@
 package main
 
-import `fmt`
+import (
+`fmt`
+counter `naive_reverend/counter`
+)
 
 type NaiveBayes struct {
-	FeatureCategoryCounters map[string]*MemCounter
-	ClassCounter            *MemCounter
+	FeatureCategoryCounters map[string]*counter.MemCounter
+	ClassCounter            *counter.MemCounter
 }
 
 type Datum struct {
@@ -12,9 +15,14 @@ type Datum struct {
 	Features []string
 }
 
+
+func New() *NaiveBayes {
+	return &NaiveBayes{make(map[string]*counter.MemCounter), counter.New()}
+}
+
 func Train(data chan *Datum) *NaiveBayes {
-	class := New()
-	features := make(map[string]*MemCounter)
+	class := counter.New()
+	features := make(map[string]*counter.MemCounter)
 
 	for datum := range data {
 		class.Incr(datum.Class)
@@ -22,7 +30,7 @@ func Train(data chan *Datum) *NaiveBayes {
 			dist, ok := features[f]
 
 			if !ok {
-				dist = New()
+				dist = counter.New()
 				features[f] = dist
 			}
 
@@ -34,15 +42,15 @@ func Train(data chan *Datum) *NaiveBayes {
 }
 
 func (nb *NaiveBayes) Classify(features []string) (string, float64) {
-	var estimator Distribution
+	var estimator counter.Distribution
 	estimator = nb.ClassCounter.Distribution()
 	fmt.Println("Prior:", estimator)
 
 	for _, f := range features {
-		counter, ok := nb.FeatureCategoryCounters[f]
-		fmt.Println("Feature:", f, "Counter:", counter)
+		c, ok := nb.FeatureCategoryCounters[f]
+		fmt.Println("Feature:", f, "Counter:", c)
 		if ok {
-			dist := counter.Distribution()
+			dist := c.Distribution()
 			estimator = estimator.Multiply(dist)
 			fmt.Println("Estimator: ", estimator)
 		}

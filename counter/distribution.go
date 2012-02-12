@@ -1,4 +1,4 @@
-package main
+package counter
 
 import (
 	`fmt`

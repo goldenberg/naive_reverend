@@ -20,8 +20,8 @@ func main() {
 	quit := make(chan bool)
 	quitServer := make(chan bool)
 
-	trainData := make(chan *model.Datum, 1000000)
-	evalData := make(chan *model.Datum, 1000000)
+	trainData := make(chan *model.Datum, 100)
+	evalData := make(chan *model.Datum, 100)
 
 	nb := model.New()
 
@@ -65,7 +65,7 @@ func Serve(nb *model.NaiveBayes, quit chan bool) {
 
 	err := http.ListenAndServe(":12345", nil)
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err.String())
+		log.Fatal("ListenAndServe: ", err)
 	}
 	quit <- true
 }
@@ -88,7 +88,7 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {
-	bufReader, _ := bufio.NewReaderSize(reader, 1000000000)
+	bufReader := bufio.NewReaderSize(reader, 1000000000)
 	i := 0
 	for {
 		line, isPrefix, err := bufReader.ReadLine()

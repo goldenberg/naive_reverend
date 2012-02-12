@@ -1,7 +1,7 @@
 package main
 
 import (
-`fmt`
+// `fmt`
 counter `naive_reverend/counter`
 )
 
@@ -37,15 +37,15 @@ func (nb *NaiveBayes) Train(datum *Datum) {
 func (nb *NaiveBayes) Classify(features []string) (string, float64) {
 	var estimator counter.Distribution
 	estimator = nb.ClassCounter.Distribution()
-	fmt.Println("Prior:", estimator)
+	// fmt.Println("Prior:", estimator)
 
 	for _, f := range features {
 		c, ok := nb.FeatureCategoryCounters[f]
-		fmt.Println("Feature:", f, "Counter:", c)
+		// fmt.Println("Feature:", f, "Counter:", c)
 		if ok {
 			dist := c.Distribution()
 			estimator = estimator.Multiply(dist)
-			fmt.Println("Estimator: ", estimator)
+			// fmt.Println("Estimator: ", estimator)
 		}
 	}
 

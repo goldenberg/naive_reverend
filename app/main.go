@@ -2,12 +2,15 @@ package main
 
 import (
 	`fmt`
+	`strings`
+	`log`
 	`bufio`
 	`json`
 	`os`
 	`flag`
 	`io`
 	`rand`
+	`http`
 	model `naive_reverend/model`
 )
 
@@ -15,13 +18,15 @@ func main() {
 	flag.Parse()
 	data := make(chan *model.Datum, 100)
 	quit := make(chan bool)
+	quitServer := make(chan bool)
 
 	trainData := make(chan *model.Datum, 1000000)
 	evalData := make(chan *model.Datum, 1000000)
 
-	go ReadData(os.Stdin, data, quit)
-
 	nb := model.New()
+
+	go ReadData(os.Stdin, data, quit)
+	go Serve(nb, quitServer)
 
 	for d := range data {
 		if rand.Float32() < 0.9 {
@@ -32,6 +37,7 @@ func main() {
 	}
 	close(trainData)
 	close(evalData)
+
 
 	var correct, wrong uint
 	for d := range evalData {
@@ -48,6 +54,38 @@ func main() {
 	fmt.Println(accuracy*100., "Got", correct, "correct and", wrong, "wrong.")
 
 	<-quit
+	<-quitServer
+}
+
+func Serve(nb *model.NaiveBayes, quit chan bool) {
+	var cHandler ClassifyHandler
+	cHandler.nb = nb
+
+	http.HandleFunc("/hello", HelloServer)
+	http.Handle("/classify", cHandler)
+
+	err := http.ListenAndServe(":12345", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err.String())
+	}
+	quit <- true
+}
+
+func HelloServer(w http.ResponseWriter, req *http.Request) {
+	io.WriteString(w, "hello, world!")	
+}
+
+type ClassifyHandler struct {
+	 nb *model.NaiveBayes
+}
+
+func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	req.ParseForm()
+	query := req.FormValue("q")
+	features := strings.Split(query, ",")
+	prediction, _ := h.nb.Classify(features)
+	io.WriteString(w, prediction)
+	return 
 }
 
 func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {

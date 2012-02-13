@@ -1,7 +1,6 @@
 package main
 
 import (
-	`bufio`
 	"encoding/json"
 	`flag`
 	`fmt`
@@ -12,6 +11,7 @@ import (
 	"net/http"
 	`os`
 	`strings`
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -25,6 +25,7 @@ func main() {
 
 	nb := model.New()
 
+	go ServeDebug()
 	go ReadData(os.Stdin, data, quit)
 	go Serve(nb, quitServer)
 
@@ -52,6 +53,7 @@ func main() {
 	accuracy := float64(correct) / (float64(correct) + float64(wrong))
 	fmt.Println(accuracy*100., "Got", correct, "correct and", wrong, "wrong.")
 
+
 	<-quit
 	<-quitServer
 }
@@ -68,6 +70,14 @@ func Serve(nb *model.NaiveBayes, quit chan bool) {
 		log.Fatal("ListenAndServe: ", err)
 	}
 	quit <- true
+}
+
+func ServeDebug() {
+	fmt.Println("starting debug server")
+	err := http.ListenAndServe(":6060", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
 
 func HelloServer(w http.ResponseWriter, req *http.Request) {
@@ -93,19 +103,11 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {
-	bufReader := bufio.NewReaderSize(reader, 1000000000)
+	jsonDecoder := json.NewDecoder(reader)
 	i := 0
 	for {
-		line, isPrefix, err := bufReader.ReadLine()
-		if err != nil {
-			break
-		}
-		if isPrefix {
-			fmt.Print("uh-oh")
-			break
-		}
 		var x model.Datum
-		err = json.Unmarshal(line, &x)
+		err := jsonDecoder.Decode(&x)
 		if err != nil {
 			fmt.Print(err)
 		}

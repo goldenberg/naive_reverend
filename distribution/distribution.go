@@ -1,8 +1,9 @@
-package counter
+package distribution
 
 import (
 	"fmt"
 	"math"
+	counter "naive_reverend/counter"
 )
 
 type Distribution interface {
@@ -12,12 +13,12 @@ type Distribution interface {
 }
 
 type CounterDistribution struct {
-	counter Counter
+	counter counter.Counter
 }
 
 var _ Distribution = new(CounterDistribution)
 
-func NewCounterDistribution(c Counter) (d Distribution) {
+func NewCounterDistribution(c counter.Counter) (d Distribution) {
 	return &CounterDistribution{c}
 }
 

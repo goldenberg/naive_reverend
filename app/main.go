@@ -8,7 +8,7 @@ import (
 	"log"
 	"math/rand"
 	model "naive_reverend/model"
-	counter "naive_reverend/counter"
+	distribution "naive_reverend/distribution"
 	"net/http"
 	"os"
 	"strings"
@@ -43,7 +43,7 @@ func main() {
 	var correct, wrong uint
 	for d := range evalData {
 		estimator, _ := nb.Classify(d.Features)
-		class, _ := counter.ArgMax(estimator)
+		class, _ := distribution.ArgMax(estimator)
 		fmt.Println("Was:", d.Class, "Got:", class)
 		if class == d.Class {
 			correct += 1
@@ -94,10 +94,10 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	query := req.FormValue("q")
 	features := strings.Split(query, ",")
 	estimator, explain := h.nb.Classify(features)
-	prediction, _ := counter.ArgMax(estimator)
+	prediction, _ := distribution.ArgMax(estimator)
 	output := map[string]interface{}{
 		"prediction":  prediction,
-		"estimator": counter.JSON(estimator),
+		"estimator": distribution.JSON(estimator),
 		"explain": explain,
 	}
 	jsonWriter := json.NewEncoder(w)

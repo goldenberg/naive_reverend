@@ -3,6 +3,7 @@ package model
 import (
 	// `fmt`
 	counter "naive_reverend/counter"
+	distribution "naive_reverend/distribution"
 )
 
 type NaiveBayes struct {
@@ -33,24 +34,24 @@ func (nb *NaiveBayes) Train(datum *Datum) {
 	}
 }
 
-func (nb *NaiveBayes) Classify(features []string) (estimator counter.Distribution, explain map[string]interface{}) {
+func (nb *NaiveBayes) Classify(features []string) (estimator distribution.Distribution, explain map[string]interface{}) {
 	explain = make(map[string]interface{})
-	estimator = counter.NewCounterDistribution(nb.ClassCounter)
+	estimator = distribution.NewCounterDistribution(nb.ClassCounter)
 
-	explain["prior"] = counter.JSON(estimator)
+	explain["prior"] = distribution.JSON(estimator)
 	// fmt.Println("Prior:", estimator)
 
 	for _, f := range features {
 		c, ok := nb.FeatureCategoryCounters[f]
 		// fmt.Println("Feature:", f, "Counter:", c)
-		var dist counter.Distribution
+		var dist distribution.Distribution
 		if ok {
-			dist = counter.NewCounterDistribution(c)
+			dist = distribution.NewCounterDistribution(c)
 		} else {
-			dist = counter.NewDerivedDistribution()
+			dist = distribution.NewDerivedDistribution()
 		}
-		explain[f] = counter.JSON(dist)
-		estimator = counter.Multiply(estimator, dist)
+		explain[f] = distribution.JSON(dist)
+		estimator = distribution.Multiply(estimator, dist)
 		// fmt.Println("Estimator: ", estimator)
 	}
 

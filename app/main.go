@@ -58,7 +58,7 @@ func main() {
 	}
 
 	elapsed := time.Since(evalStartTime).Seconds()
-	fmt.Println("Took", elapsed, "for", correct + wrong, "queries.", elapsed / float64(correct + wrong), "sec/query")
+	fmt.Println("Took", elapsed, "for", correct+wrong, "queries.", elapsed/float64(correct+wrong), "sec/query")
 	accuracy := float64(correct) / (float64(correct) + float64(wrong))
 	fmt.Println(accuracy*100., "Got", correct, "correct and", wrong, "wrong.")
 

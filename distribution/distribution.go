@@ -96,7 +96,7 @@ func (d *DerivedDistribution) Get(k string) float64 {
 func (d *DerivedDistribution) Keys() []string {
 	result := make([]string, 0, len(d.logProbabilities))
 
-	for k, _ := range d.logProbabilities {
+	for k := range d.logProbabilities {
 		result = append(result, k)
 	}
 

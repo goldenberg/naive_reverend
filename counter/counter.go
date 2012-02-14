@@ -36,7 +36,7 @@ func (c MemCounter) Incr(k string) {
 func (c MemCounter) Keys() []string {
 	result := make([]string, 0, len(c))
 
-	for k, _ := range c {
+	for k := range c {
 		result = append(result, k)
 	}
 

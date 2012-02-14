@@ -55,5 +55,5 @@ func (nb *NaiveBayes) Classify(features []string) (estimator distribution.Interf
 		// fmt.Println("Estimator: ", estimator)
 	}
 
-	return 
+	return
 }

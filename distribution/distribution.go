@@ -40,7 +40,7 @@ func Multiply(a, b Interface) Interface {
 	// fmt.Println("Multiply a:", a, "b:", b)
 	for k := range mergeKeys(a.Keys(), b.Keys()) {
 		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
-		logProbs[k] = a.LogGet(k)+b.LogGet(k)
+		logProbs[k] = a.LogGet(k) + b.LogGet(k)
 	}
 	return &DerivedDistribution{logProbs}
 }
@@ -50,7 +50,7 @@ func Divide(a, b Interface) Interface {
 	fmt.Println("Divide a:", a, "b:", b)
 	for k := range mergeKeys(a.Keys(), b.Keys()) {
 		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
-		logProbs[k] = a.LogGet(k)-b.LogGet(k)
+		logProbs[k] = a.LogGet(k) - b.LogGet(k)
 	}
 	return &DerivedDistribution{logProbs}
 }
@@ -58,13 +58,14 @@ func Divide(a, b Interface) Interface {
 func JSON(d Interface) (out map[string]interface{}) {
 	out = make(map[string]interface{})
 	for _, k := range d.Keys() {
-		out[k] = map[string]float64 {
-			"p(k)": d.Get(k),
+		out[k] = map[string]float64{
+			"p(k)":      d.Get(k),
 			"log(p(k))": d.LogGet(k),
 		}
-	}	
+	}
 	return
 }
+
 func ArgMax(d Interface) (maxKey string, maxProb float64) {
 	maxProb = math.Inf(-1)
 	for _, k := range d.Keys() {

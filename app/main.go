@@ -96,9 +96,9 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	estimator, explain := h.nb.Classify(features)
 	prediction, _ := distribution.ArgMax(estimator)
 	output := map[string]interface{}{
-		"prediction":  prediction,
-		"estimator": distribution.JSON(estimator),
-		"explain": explain,
+		"prediction": prediction,
+		"estimator":  distribution.JSON(estimator),
+		"explain":    explain,
 	}
 	jsonWriter := json.NewEncoder(w)
 	jsonWriter.Encode(output)

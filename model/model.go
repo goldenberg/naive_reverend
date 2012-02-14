@@ -43,10 +43,10 @@ func (nb *NaiveBayes) Classify(features []string) (string, float64) {
 		// fmt.Println("Feature:", f, "Counter:", c)
 		if ok {
 			dist := c.Distribution()
-			estimator = estimator.Multiply(dist)
+			estimator = counter.Multiply(estimator, dist)
 			// fmt.Println("Estimator: ", estimator)
 		}
 	}
 
-	return estimator.ArgMax()
+	return counter.ArgMax(estimator)
 }

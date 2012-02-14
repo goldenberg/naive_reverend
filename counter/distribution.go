@@ -10,10 +10,6 @@ type Distribution interface {
 	Keys() []string
 	LogGet(k string) float64
 	LogSet(k string, v float64)
-
-	Multiply(o Distribution) (result Distribution)
-	Divide(o Distribution) (result Distribution)
-	ArgMax() (k string, probability float64)
 }
 
 type CounterDistribution struct {
@@ -22,8 +18,8 @@ type CounterDistribution struct {
 
 var _ Distribution = new(CounterDistribution)
 
-// func NewCounterDistribution(c *Counter) {
-// 	d = Distribution	
+// func NewCounterDistribution(c *Counter) (d *Distribution) {
+// 	for k
 // }
 
 func (d *CounterDistribution) Get(k string) float64 {
@@ -44,53 +40,55 @@ func (d *CounterDistribution) LogSet(k string, v float64) {
 	fmt.Println("baaaaaaaaaaaaaaaaaaaaaaaaaaad")
 }
 
-func (d *CounterDistribution) Multiply(o Distribution) Distribution {
-	result := NewGeneratedDistribution()
-	fmt.Println("Multiply d:", d, "o:", o)
-	for k := range mergeKeys(d.Keys(), o.Keys()) {
+func Multiply(a, b Distribution) Distribution {
+	result := NewDerivedDistribution()
+	fmt.Println("Multiply a:", a, "b:", b)
+	for k := range mergeKeys(a.Keys(), b.Keys()) {
 		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
-		result.LogSet(k, d.LogGet(k)+o.LogGet(k))
+		result.LogSet(k, a.LogGet(k) + b.LogGet(k))
 	}
 	return result
 }
 
-func (d *CounterDistribution) Divide(o Distribution) (result Distribution) {
-	result = NewGeneratedDistribution()
-	for k := range mergeKeys(d.Keys(), o.Keys()) {
-		result.LogSet(k, d.LogGet(k)-o.LogGet(k))
+
+func Divide(a, b Distribution) Distribution {
+	result := NewDerivedDistribution()
+	fmt.Println("Divide a:", a, "b:", b)
+	for k := range mergeKeys(a.Keys(), b.Keys()) {
+		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
+		result.LogSet(k, a.LogGet(k) - b.LogGet(k))
 	}
-	return
+	return result
 }
 
-func (d *CounterDistribution) ArgMax() (key string, probability float64) {
+func ArgMax(d Distribution) (key string, probability float64) {
 	probability = math.Inf(-1)
 	for _, k := range d.Keys() {
 		p := d.Get(key)
 		if p > probability {
 			key = k
 			probability = p
-		} else {
 		}
 	}
 	return
 }
 
-type GeneratedDistribution struct {
+type DerivedDistribution struct {
 	logProbabilities map[string]float64
 }
 
-var _ Distribution = new(GeneratedDistribution)
+var _ Distribution = new(DerivedDistribution)
 
-func NewGeneratedDistribution() *GeneratedDistribution {
-	return &GeneratedDistribution{make(map[string]float64)}
+func NewDerivedDistribution() *DerivedDistribution {
+	return &DerivedDistribution{make(map[string]float64)}
 }
 
-func (d *GeneratedDistribution) Get(k string) float64 {
+func (d *DerivedDistribution) Get(k string) float64 {
 	return math.Exp(d.LogGet(k))
 }
 
 // Return a list of keys for this counter
-func (d *GeneratedDistribution) Keys() []string {
+func (d *DerivedDistribution) Keys() []string {
 	result := make([]string, 0, len(d.logProbabilities))
 
 	for k, _ := range d.logProbabilities {
@@ -100,7 +98,7 @@ func (d *GeneratedDistribution) Keys() []string {
 	return result
 }
 
-func (d *GeneratedDistribution) LogGet(k string) float64 {
+func (d *DerivedDistribution) LogGet(k string) float64 {
 	logProb, ok := d.logProbabilities[k]
 	if ok {
 		return logProb
@@ -108,65 +106,10 @@ func (d *GeneratedDistribution) LogGet(k string) float64 {
 	return 0.0
 }
 
-func (d *GeneratedDistribution) LogSet(k string, v float64) {
-	//fmt.Println("k:", k, "v:", v, "d:", d)
+func (d *DerivedDistribution) LogSet(k string, v float64) {
 	d.logProbabilities[k] = v
 }
 
-func (d *GeneratedDistribution) Multiply(o Distribution) (result Distribution) {
-	result = NewGeneratedDistribution()
-	// fmt.Println("Multiply d:", d, "o:", o)
-	for k := range mergeKeys(d.Keys(), o.Keys()) {
-		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
-		result.LogSet(k, d.LogGet(k)+o.LogGet(k))
-	}
-	return
-}
-
-func (d *GeneratedDistribution) Divide(o Distribution) (result Distribution) {
-	for k := range mergeKeys(d.Keys(), o.Keys()) {
-		result.LogSet(k, d.LogGet(k)-o.LogGet(k))
-	}
-	return
-}
-
-func (d *GeneratedDistribution) ArgMax() (k string, probability float64) {
-	maxLogProb := math.Inf(-1)
-	var maxKey string
-	for testKey, logProb := range d.logProbabilities {
-		if logProb > maxLogProb {
-			// fmt.Println("Found logProb", logProb, ">", maxLogProb)
-			maxKey = testKey
-			maxLogProb = logProb
-		}
-	}
-	return maxKey, math.Exp(maxLogProb)
-}
-
-// borrowed from mattj
-func (c *GeneratedDistribution) String() string {
-	s := "Counter: {"
-
-	for _, key := range c.Keys() {
-		s += fmt.Sprintf("'%s': %f, ", key, c.Get(key))
-	}
-
-	s += "}"
-
-	return s
-}
-
-func (c *CounterDistribution) String() string {
-	s := "Counter: {"
-
-	for _, key := range c.Keys() {
-		s += fmt.Sprintf("'%s': %f, ", key, c.Get(key))
-	}
-
-	s += "}"
-
-	return s
-}
 
 // Combine two sets of keys w/o duplicates
 // borrowed from mattj

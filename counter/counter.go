@@ -1,6 +1,8 @@
 package counter
 
-import ()
+import (
+	"fmt"
+)
 
 type Counter interface {
 	Get(string) uint
@@ -53,4 +55,16 @@ func (c *MemCounter) Sum() (result uint) {
 
 func (c *MemCounter) Distribution() *CounterDistribution {
 	return &CounterDistribution{c}
+}
+
+func (c *MemCounter) String() string {
+	s := "Counter: {"
+
+	for _, key := range c.Keys() {
+		s += fmt.Sprintf("'%s': %f, ", key, c.Get(key))
+	}
+
+	s += "}"
+
+	return s
 }

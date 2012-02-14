@@ -46,7 +46,7 @@ func (d *CounterDistribution) LogSet(k string, v float64) {
 
 func (d *CounterDistribution) Multiply(o Distribution) Distribution {
 	result := NewGeneratedDistribution()
-	fmt.Println("Multiply d:", d, "o:", o)
+	// fmt.Println("Multiply d:", d, "o:", o)
 	for k := range mergeKeys(d.Keys(), o.Keys()) {
 		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
 		result.LogSet(k, d.LogGet(k)+o.LogGet(k))

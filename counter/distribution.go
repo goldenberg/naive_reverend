@@ -1,15 +1,14 @@
 package counter
 
 import (
-	`fmt`
-	`math`
+	"fmt"
+	"math"
 )
 
 type Distribution interface {
 	Get(k string) float64
 	Keys() []string
 	LogGet(k string) float64
-	LogSet(k string, v float64)
 }
 
 type CounterDistribution struct {
@@ -18,12 +17,12 @@ type CounterDistribution struct {
 
 var _ Distribution = new(CounterDistribution)
 
-// func NewCounterDistribution(c *Counter) (d *Distribution) {
-// 	for k
-// }
+func NewCounterDistribution(c Counter) (d Distribution) {
+	return &CounterDistribution{c}
+}
 
 func (d *CounterDistribution) Get(k string) float64 {
-	return float64(d.counter.Get(k)+1) / float64(d.counter.Sum()+1)
+	return float64(d.counter.Get(k)) / float64(d.counter.Sum())
 }
 
 // Return a list of keys for this counter
@@ -35,39 +34,43 @@ func (d *CounterDistribution) LogGet(k string) float64 {
 	return math.Log(float64(d.counter.Get(k)+1)) - math.Log(float64(d.counter.Sum()+1))
 }
 
-func (d *CounterDistribution) LogSet(k string, v float64) {
-	//fmt.Println("k:", k, "v:", v, "d:", d)
-	fmt.Println("baaaaaaaaaaaaaaaaaaaaaaaaaaad")
-}
-
 func Multiply(a, b Distribution) Distribution {
-	result := NewDerivedDistribution()
-	fmt.Println("Multiply a:", a, "b:", b)
+	logProbs := make(map[string]float64)
+	// fmt.Println("Multiply a:", a, "b:", b)
 	for k := range mergeKeys(a.Keys(), b.Keys()) {
 		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
-		result.LogSet(k, a.LogGet(k) + b.LogGet(k))
+		logProbs[k] = a.LogGet(k)+b.LogGet(k)
 	}
-	return result
+	return &DerivedDistribution{logProbs}
 }
 
-
 func Divide(a, b Distribution) Distribution {
-	result := NewDerivedDistribution()
+	logProbs := make(map[string]float64)
 	fmt.Println("Divide a:", a, "b:", b)
 	for k := range mergeKeys(a.Keys(), b.Keys()) {
 		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
-		result.LogSet(k, a.LogGet(k) - b.LogGet(k))
+		logProbs[k] = a.LogGet(k)-b.LogGet(k)
 	}
-	return result
+	return &DerivedDistribution{logProbs}
 }
 
-func ArgMax(d Distribution) (key string, probability float64) {
-	probability = math.Inf(-1)
+func JSON(d Distribution) (out map[string]interface{}) {
+	out = make(map[string]interface{})
 	for _, k := range d.Keys() {
-		p := d.Get(key)
-		if p > probability {
-			key = k
-			probability = p
+		out[k] = map[string]float64 {
+			"p(k)": d.Get(k),
+			"log(p(k))": d.LogGet(k),
+		}
+	}	
+	return
+}
+func ArgMax(d Distribution) (maxKey string, maxProb float64) {
+	maxProb = math.Inf(-1)
+	for _, k := range d.Keys() {
+		p := d.Get(k)
+		if p > maxProb {
+			maxKey = k
+			maxProb = p
 		}
 	}
 	return
@@ -105,11 +108,6 @@ func (d *DerivedDistribution) LogGet(k string) float64 {
 	}
 	return 0.0
 }
-
-func (d *DerivedDistribution) LogSet(k string, v float64) {
-	d.logProbabilities[k] = v
-}
-
 
 // Combine two sets of keys w/o duplicates
 // borrowed from mattj

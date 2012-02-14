@@ -2,15 +2,16 @@ package main
 
 import (
 	"encoding/json"
-	`flag`
-	`fmt`
-	`io`
-	`log`
+	"flag"
+	"fmt"
+	"io"
+	"log"
 	"math/rand"
-	model `naive_reverend/model`
+	model "naive_reverend/model"
+	counter "naive_reverend/counter"
 	"net/http"
-	`os`
-	`strings`
+	"os"
+	"strings"
 	_ "net/http/pprof"
 )
 
@@ -41,7 +42,8 @@ func main() {
 
 	var correct, wrong uint
 	for d := range evalData {
-		class, _ := nb.Classify(d.Features)
+		estimator, _ := nb.Classify(d.Features)
+		class, _ := counter.ArgMax(estimator)
 		fmt.Println("Was:", d.Class, "Got:", class)
 		if class == d.Class {
 			correct += 1
@@ -52,7 +54,6 @@ func main() {
 
 	accuracy := float64(correct) / (float64(correct) + float64(wrong))
 	fmt.Println(accuracy*100., "Got", correct, "correct and", wrong, "wrong.")
-
 
 	<-quit
 	<-quitServer
@@ -92,10 +93,12 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	query := req.FormValue("q")
 	features := strings.Split(query, ",")
-	prediction, prob := h.nb.Classify(features)
+	estimator, explain := h.nb.Classify(features)
+	prediction, _ := counter.ArgMax(estimator)
 	output := map[string]interface{}{
-		"prediction": prediction,
-		"probability": prob,
+		"prediction":  prediction,
+		"estimator": counter.JSON(estimator),
+		"explain": explain,
 	}
 	jsonWriter := json.NewEncoder(w)
 	jsonWriter.Encode(output)
@@ -109,7 +112,8 @@ func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {
 		var x model.Datum
 		err := jsonDecoder.Decode(&x)
 		if err != nil {
-			fmt.Print(err)
+			fmt.Println(err)
+			break
 		}
 		out <- &x
 		i += 1

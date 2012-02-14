@@ -6,19 +6,19 @@ import (
 	counter "naive_reverend/counter"
 )
 
-type Distribution interface {
+type Interface interface {
 	Get(k string) float64
 	Keys() []string
 	LogGet(k string) float64
 }
 
 type CounterDistribution struct {
-	counter counter.Counter
+	counter counter.Interface
 }
 
-var _ Distribution = new(CounterDistribution)
+var _ Interface = new(CounterDistribution)
 
-func NewCounterDistribution(c counter.Counter) (d Distribution) {
+func NewCounterDistribution(c counter.Interface) (d Interface) {
 	return &CounterDistribution{c}
 }
 
@@ -35,7 +35,7 @@ func (d *CounterDistribution) LogGet(k string) float64 {
 	return math.Log(float64(d.counter.Get(k)+1)) - math.Log(float64(d.counter.Sum()+1))
 }
 
-func Multiply(a, b Distribution) Distribution {
+func Multiply(a, b Interface) Interface {
 	logProbs := make(map[string]float64)
 	// fmt.Println("Multiply a:", a, "b:", b)
 	for k := range mergeKeys(a.Keys(), b.Keys()) {
@@ -45,7 +45,7 @@ func Multiply(a, b Distribution) Distribution {
 	return &DerivedDistribution{logProbs}
 }
 
-func Divide(a, b Distribution) Distribution {
+func Divide(a, b Interface) Interface {
 	logProbs := make(map[string]float64)
 	fmt.Println("Divide a:", a, "b:", b)
 	for k := range mergeKeys(a.Keys(), b.Keys()) {
@@ -55,7 +55,7 @@ func Divide(a, b Distribution) Distribution {
 	return &DerivedDistribution{logProbs}
 }
 
-func JSON(d Distribution) (out map[string]interface{}) {
+func JSON(d Interface) (out map[string]interface{}) {
 	out = make(map[string]interface{})
 	for _, k := range d.Keys() {
 		out[k] = map[string]float64 {
@@ -65,7 +65,7 @@ func JSON(d Distribution) (out map[string]interface{}) {
 	}	
 	return
 }
-func ArgMax(d Distribution) (maxKey string, maxProb float64) {
+func ArgMax(d Interface) (maxKey string, maxProb float64) {
 	maxProb = math.Inf(-1)
 	for _, k := range d.Keys() {
 		p := d.Get(k)
@@ -81,7 +81,7 @@ type DerivedDistribution struct {
 	logProbabilities map[string]float64
 }
 
-var _ Distribution = new(DerivedDistribution)
+var _ Interface = new(DerivedDistribution)
 
 func NewDerivedDistribution() *DerivedDistribution {
 	return &DerivedDistribution{make(map[string]float64)}

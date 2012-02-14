@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type Counter interface {
+type Interface interface {
 	Get(string) uint
 	Set(string, uint)
 	Incr(string)
@@ -14,7 +14,7 @@ type Counter interface {
 
 type MemCounter map[string]uint
 
-var _ Counter = new(MemCounter)
+var _ Interface = new(MemCounter)
 
 func New() *MemCounter {
 	return &MemCounter{}

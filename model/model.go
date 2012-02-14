@@ -7,8 +7,8 @@ import (
 )
 
 type NaiveBayes struct {
-	FeatureCategoryCounters map[string]*counter.MemCounter
-	ClassCounter            *counter.MemCounter
+	FeatureCategoryCounters map[string]counter.Interface
+	ClassCounter            counter.Interface
 }
 
 type Datum struct {
@@ -17,7 +17,7 @@ type Datum struct {
 }
 
 func New() *NaiveBayes {
-	return &NaiveBayes{make(map[string]*counter.MemCounter), counter.New()}
+	return &NaiveBayes{make(map[string]counter.Interface), counter.New()}
 }
 
 func (nb *NaiveBayes) Train(datum *Datum) {
@@ -34,7 +34,7 @@ func (nb *NaiveBayes) Train(datum *Datum) {
 	}
 }
 
-func (nb *NaiveBayes) Classify(features []string) (estimator distribution.Distribution, explain map[string]interface{}) {
+func (nb *NaiveBayes) Classify(features []string) (estimator distribution.Interface, explain map[string]interface{}) {
 	explain = make(map[string]interface{})
 	estimator = distribution.NewCounterDistribution(nb.ClassCounter)
 
@@ -44,7 +44,7 @@ func (nb *NaiveBayes) Classify(features []string) (estimator distribution.Distri
 	for _, f := range features {
 		c, ok := nb.FeatureCategoryCounters[f]
 		// fmt.Println("Feature:", f, "Counter:", c)
-		var dist distribution.Distribution
+		var dist distribution.Interface
 		if ok {
 			dist = distribution.NewCounterDistribution(c)
 		} else {

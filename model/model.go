@@ -23,14 +23,14 @@ func New() *NaiveBayes {
 func (nb *NaiveBayes) Train(datum *Datum) {
 	nb.ClassCounter.Incr(datum.Class)
 	for _, f := range datum.Features {
-		dist, ok := nb.FeatureCategoryCounters[f]
+		c, ok := nb.FeatureCategoryCounters[f]
 
 		if !ok {
-			dist = counter.New()
-			nb.FeatureCategoryCounters[f] = dist
+			c = counter.New()
+			nb.FeatureCategoryCounters[f] = c
 		}
 
-		dist.Incr(datum.Class)
+		c.Incr(datum.Class)
 	}
 }
 

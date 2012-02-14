@@ -13,9 +13,7 @@ type Counter interface {
 	Distribution() *CounterDistribution
 }
 
-type MemCounter struct {
-	values map[string]uint
-}
+type MemCounter map[string]uint
 
 var _ Counter = new(MemCounter)
 

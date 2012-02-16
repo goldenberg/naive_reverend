@@ -19,6 +19,8 @@ import (
 
 func main() {
 	var profile = flag.Bool("p", false, "write profiles to ./")
+	// var train = flag.String("t", "", "train using the data in this file")
+	// var evaluate = flag.String("e", "", "train using the data in this file")
 	flag.Parse()
 	data := make(chan *model.Datum, 100)
 	quit := make(chan bool)

@@ -5,14 +5,14 @@ import (
 )
 
 type Interface interface {
-	Get(string) uint
-	Set(string, uint)
+	Get(string) int64
+	Set(string, int64)
 	Incr(string)
 	Keys() []string
-	Sum() uint
+	Sum() int64
 }
 
-type MemCounter map[string]uint
+type MemCounter map[string]int64
 
 var _ Interface = new(MemCounter)
 
@@ -20,11 +20,11 @@ func New() Interface {
 	return &MemCounter{}
 }
 
-func (c MemCounter) Get(k string) uint {
+func (c MemCounter) Get(k string) int64 {
 	return c[k]
 }
 
-func (c MemCounter) Set(k string, v uint) {
+func (c MemCounter) Set(k string, v int64) {
 	c[k] = v
 }
 
@@ -43,7 +43,7 @@ func (c MemCounter) Keys() []string {
 	return result
 }
 
-func (c MemCounter) Sum() (result uint) {
+func (c MemCounter) Sum() (result int64) {
 	for _, v := range c {
 		result += v
 	}

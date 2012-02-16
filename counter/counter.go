@@ -16,7 +16,7 @@ type MemCounter map[string]uint
 
 var _ Interface = new(MemCounter)
 
-func New() *MemCounter {
+func New() Interface {
 	return &MemCounter{}
 }
 

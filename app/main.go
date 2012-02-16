@@ -14,11 +14,11 @@ import (
 	"strings"
 	_ "net/http/pprof"
 	"time"
-	"runtime"
+	pprof "runtime/pprof"
 )
 
 func main() {
-	runtime.GOMAXPROCS(0)
+	var profile = flag.Bool("p", false, "write profiles to ./")
 	flag.Parse()
 	data := make(chan *model.Datum, 100)
 	quit := make(chan bool)
@@ -62,8 +62,23 @@ func main() {
 	accuracy := float64(correct) / (float64(correct) + float64(wrong))
 	fmt.Println(accuracy*100., "Got", correct, "correct and", wrong, "wrong.")
 
+	if *profile {
+		DumpProfiles()
+	}
+
 	<-quit
 	<-quitServer
+}
+
+func DumpProfiles() {
+    f, err := os.Create("./memprofile")
+    if err != nil {
+        log.Fatal(err)
+    }
+    pprof.WriteHeapProfile(f)
+    f.Close()
+    fmt.Println("Wrote memprofile")
+    return
 }
 
 func Serve(nb *model.NaiveBayes, quit chan bool) {

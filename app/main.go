@@ -68,10 +68,10 @@ func Evaluate(evalData chan *model.Datum, nb *model.NaiveBayes) {
 	for d := range evalData {
 		estimator, _ := nb.Classify(d.Features)
 		class, _ := distribution.ArgMax(estimator)
-		// fmt.Println("Was:", d.Class, "Got:", class)
 		if class == d.Class {
 			correct += 1
 		} else {
+			fmt.Println("For:", d.Features, "Was:", d.Class, "Got:", class)
 			wrong += 1
 		}
 	}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	model "naive_reverend/model"
 	distribution "naive_reverend/distribution"
 	"net/http"
@@ -15,38 +14,56 @@ import (
 	_ "net/http/pprof"
 	"time"
 	pprof "runtime/pprof"
+	"bufio"
 )
 
 func main() {
-	var profile = flag.Bool("p", false, "write profiles to ./")
-	// var train = flag.String("t", "", "train using the data in this file")
-	// var evaluate = flag.String("e", "", "train using the data in this file")
+	profile := flag.Bool("p", false, "write profiles to ./")
+	train := flag.String("t", "", "train using the data in this file")
+	evaluate := flag.String("e", "", "train using the data in this file")
+
 	flag.Parse()
-	data := make(chan *model.Datum, 100)
-	quit := make(chan bool)
-	quitServer := make(chan bool)
 
 	trainData := make(chan *model.Datum, 100)
-	evalData := make(chan *model.Datum, 400)
+	evalData := make(chan *model.Datum, 100)
+	quit := make(chan bool)
 
 	nb := model.New()
 
+	quitServer := make(chan bool)
+
 	go ServeDebug()
-	go ReadData(os.Stdin, data, quit)
 	go Serve(nb, quitServer)
 
-	for d := range data {
-		if rand.Float32() < 0.9 {
-			nb.Train(d)
-		} else {
-			evalData <- d
-		}
+	if *train != "" {
+		fmt.Println("Training on", *train)
+		f, _ := os.Open(*train)
+		go ReadData(bufio.NewReader(f), trainData, quit)
+		go func() {
+			for d := range trainData {
+				nb.Train(d)
+			}
+		}()
+		<-quit
 	}
-	close(trainData)
-	close(evalData)
 
+	if *evaluate != "" {
+		fmt.Println("Evaluating on", *evaluate)
+		f, _ := os.Open(*evaluate)
+		go ReadData(bufio.NewReader(f), evalData, quit)
+		go Evaluate(evalData, nb)
+	}
+
+	if *profile {
+		DumpProfiles()
+	}
+
+	<-quit
+	<-quitServer
+}
+
+func Evaluate(evalData chan *model.Datum, nb *model.NaiveBayes) {
 	var correct, wrong uint
-
 	evalStartTime := time.Now()
 	for d := range evalData {
 		estimator, _ := nb.Classify(d.Features)
@@ -63,24 +80,17 @@ func main() {
 	fmt.Println("Took", elapsed, "for", correct+wrong, "queries.", elapsed/float64(correct+wrong), "sec/query")
 	accuracy := float64(correct) / (float64(correct) + float64(wrong))
 	fmt.Println(accuracy*100., "Got", correct, "correct and", wrong, "wrong.")
-
-	if *profile {
-		DumpProfiles()
-	}
-
-	<-quit
-	<-quitServer
 }
 
 func DumpProfiles() {
-    f, err := os.Create("./memprofile")
-    if err != nil {
-        log.Fatal(err)
-    }
-    pprof.WriteHeapProfile(f)
-    f.Close()
-    fmt.Println("Wrote memprofile")
-    return
+	f, err := os.Create("./memprofile")
+	if err != nil {
+		log.Fatal(err)
+	}
+	pprof.WriteHeapProfile(f)
+	f.Close()
+	fmt.Println("Wrote memprofile")
+	return
 }
 
 func Serve(nb *model.NaiveBayes, quit chan bool) {

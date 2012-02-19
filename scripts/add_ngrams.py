@@ -22,7 +22,7 @@ def main():
 
 		x['features'].extend(bigrams)
 		x['features'].extend(trigrams)
-		x['features'].extend(quadgrams)
+		# x['features'].extend(quadgrams)
 		print json.dumps(x)
 
 

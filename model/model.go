@@ -1,7 +1,7 @@
 package model
 
 import (
-	`fmt`
+	// `fmt`
 	counter "naive_reverend/counter"
 	distribution "naive_reverend/distribution"
 )
@@ -44,11 +44,11 @@ func (nb *NaiveBayes) Classify(features []string) (estimator distribution.Interf
 	estimator = distribution.NewCounterDistribution(nb.ClassCounter)
 
 	explain["prior"] = distribution.JSON(estimator)
-	// fmt.Println("Prior:", estimator)
+	// Println("Prior:", estimator)
 
 	for _, f := range features {
 		c, ok := nb.FeatureCategoryCounters[f]
-		fmt.Println("Feature:", f, "Counter:", c)
+		// fmt.Println("Feature:", f, "Counter:", c)
 		var dist distribution.Interface
 		if ok {
 			dist = distribution.NewCounterDistribution(c)

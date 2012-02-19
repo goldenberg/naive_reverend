@@ -131,9 +131,10 @@ type StatusHandler struct {
 }
 
 func (h StatusHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	prior := distribution.NewCounterDistribution(h.nb.ClassCounter)
 	jsonWriter := json.NewEncoder(w)
 	jsonWriter.Encode(map[string]interface{}{
-		"prior": h.nb.ClassCounter.String(),
+		"prior": distribution.JSON(prior),
 		"num_features": len(h.nb.FeatureCategoryCounters),
 	})
 	return

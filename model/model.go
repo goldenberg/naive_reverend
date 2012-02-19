@@ -1,7 +1,7 @@
 package model
 
 import (
-	// `fmt`
+	`fmt`
 	counter "naive_reverend/counter"
 	distribution "naive_reverend/distribution"
 )
@@ -14,6 +14,7 @@ type NaiveBayes struct {
 type Datum struct {
 	Class    string
 	Features []string
+	Count uint
 }
 
 func New() *NaiveBayes {
@@ -21,7 +22,11 @@ func New() *NaiveBayes {
 }
 
 func (nb *NaiveBayes) Train(datum *Datum) {
-	nb.ClassCounter.Incr(datum.Class)
+	nb.TrainN(datum, datum.Count)
+}
+
+func (nb *NaiveBayes) TrainN(datum *Datum, n uint) {
+	nb.ClassCounter.IncrN(datum.Class, n)
 	for _, f := range datum.Features {
 		c, ok := nb.FeatureCategoryCounters[f]
 
@@ -30,7 +35,7 @@ func (nb *NaiveBayes) Train(datum *Datum) {
 			nb.FeatureCategoryCounters[f] = c
 		}
 
-		c.Incr(datum.Class)
+		c.IncrN(datum.Class, n)
 	}
 }
 
@@ -43,7 +48,7 @@ func (nb *NaiveBayes) Classify(features []string) (estimator distribution.Interf
 
 	for _, f := range features {
 		c, ok := nb.FeatureCategoryCounters[f]
-		// fmt.Println("Feature:", f, "Counter:", c)
+		fmt.Println("Feature:", f, "Counter:", c)
 		var dist distribution.Interface
 		if ok {
 			dist = distribution.NewCounterDistribution(c)

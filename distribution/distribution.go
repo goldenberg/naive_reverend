@@ -55,13 +55,21 @@ func Divide(a, b Interface) Interface {
 	return &DerivedDistribution{logProbs}
 }
 
+// func JSON(d Interface) (out map[string]interface{}) {
+// 	out = make(map[string]interface{})
+// 	for _, k := range d.Keys() {
+// 		out[k] = map[string]float64{
+// 			"p(k)":      d.Get(k),
+// 			"log(p(k))": d.LogGet(k),
+// 		}
+// 	}
+// 	return
+// }
+
 func JSON(d Interface) (out map[string]interface{}) {
 	out = make(map[string]interface{})
 	for _, k := range d.Keys() {
-		out[k] = map[string]float64{
-			"p(k)":      d.Get(k),
-			"log(p(k))": d.LogGet(k),
-		}
+		out[k] = d.Get(k)
 	}
 	return
 }

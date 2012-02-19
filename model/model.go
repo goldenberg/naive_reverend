@@ -15,6 +15,7 @@ type NaiveBayes struct {
 type Datum struct {
 	Class    string
 	Features []string
+	Count uint
 }
 
 func New() *NaiveBayes {
@@ -22,9 +23,18 @@ func New() *NaiveBayes {
 }
 
 func (nb *NaiveBayes) Train(datum *Datum) {
-	nb.ClassCounter.Incr(datum.Class)
+	nb.TrainN(datum, datum.Count)
+}
+
+func (nb *NaiveBayes) TrainN(datum *Datum, n uint) {
+	nb.ClassCounter.IncrN(datum.Class, n)
 	for _, f := range datum.Features {
-		nb.FeatureCategoryCounters.Incr(f, datum.Class)
+		if !ok {
+			c = counter.New()
+			nb.FeatureCategoryCounters[f] = c
+		}
+
+		c.IncrN(datum.Class, n)
 	}
 }
 
@@ -33,7 +43,7 @@ func (nb *NaiveBayes) Classify(features []string) (estimator distribution.Interf
 	estimator = distribution.NewCounterDistribution(nb.ClassCounter)
 
 	explain["prior"] = distribution.JSON(estimator)
-	// fmt.Println("Prior:", estimator)
+	// Println("Prior:", estimator)
 
 	for _, f := range features {
 		c, ok := nb.FeatureCategoryCounters.Fetch(f)

@@ -94,11 +94,10 @@ func DumpProfiles() {
 }
 
 func Serve(nb *model.NaiveBayes, quit chan bool) {
-	var cHandler ClassifyHandler
-	cHandler.nb = nb
-
+	fmt.Println("serving")
 	http.HandleFunc("/hello", HelloServer)
-	http.Handle("/classify", cHandler)
+	http.Handle("/status", StatusHandler{nb})
+	http.Handle("/classify", ClassifyHandler{nb})
 
 	err := http.ListenAndServe(":12345", nil)
 	if err != nil {
@@ -139,6 +138,20 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
+type StatusHandler struct {
+	nb *model.NaiveBayes
+}
+
+func (h StatusHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	prior := distribution.NewCounterDistribution(h.nb.ClassCounter)
+	jsonWriter := json.NewEncoder(w)
+	jsonWriter.Encode(map[string]interface{}{
+		"prior": distribution.JSON(prior),
+		"num_features": len(h.nb.FeatureCategoryCounters),
+	})
+	return
+}
+
 func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {
 	jsonDecoder := json.NewDecoder(reader)
 	i := 0
@@ -148,6 +161,9 @@ func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {
 		if err != nil {
 			fmt.Println(err)
 			break
+		}
+		if x.Count == 0 {
+			x.Count = 1
 		}
 		out <- &x
 		i += 1

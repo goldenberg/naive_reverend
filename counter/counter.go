@@ -8,8 +8,10 @@ type Interface interface {
 	Get(string) int64
 	Set(string, int64)
 	Incr(string)
+	IncrN(string, uint)
 	Keys() []string
 	Sum() int64
+	String() string
 }
 
 type MemCounter map[string]int64
@@ -30,6 +32,10 @@ func (c MemCounter) Set(k string, v int64) {
 
 func (c MemCounter) Incr(k string) {
 	c[k] += 1
+}
+
+func (c MemCounter) IncrN(k string, n uint) {
+	c[k] += n
 }
 
 // Return a list of keys for this counter

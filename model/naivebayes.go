@@ -4,7 +4,7 @@ import (
 	// `fmt`
 	counter "naive_reverend/counter"
 	distribution "naive_reverend/distribution"
-		store "naive_reverend/store"
+	store "naive_reverend/store"
 )
 
 type NaiveBayes struct {

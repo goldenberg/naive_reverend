@@ -1,4 +1,4 @@
-package store 
+package store
 
 import (
 	counter "naive_reverend/counter"
@@ -29,7 +29,7 @@ func (s MemCounterStore) Incr(name, key string) {
 }
 
 func (s MemCounterStore) IncrN(name, key string, n int64) {
-	c, ok := s[name]	
+	c, ok := s[name]
 	if !ok {
 		c = counter.New()
 		s[name] = c

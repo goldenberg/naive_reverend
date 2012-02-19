@@ -7,6 +7,8 @@ import (
 type Interface interface {
 	Fetch(name string) (c counter.Interface, ok bool)
 	Incr(name, key string)
+	IncrN(name, key string, n int64)
+	Size() int64
 }
 
 type MemCounterStore map[string]counter.Interface
@@ -23,11 +25,18 @@ func (s MemCounterStore) Fetch(name string) (c counter.Interface, ok bool) {
 }
 
 func (s MemCounterStore) Incr(name, key string) {
+	s.IncrN(name, key, 1)
+}
+
+func (s MemCounterStore) IncrN(name, key string, n int64) {
 	c, ok := s[name]	
 	if !ok {
 		c = counter.New()
 		s[name] = c
 	}
-	c.Incr(key)
+	c.IncrN(key, n)
 }
 
+func (s MemCounterStore) Size() int64 {
+	return int64(len(s))
+}

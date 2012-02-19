@@ -8,7 +8,7 @@ type Interface interface {
 	Get(string) int64
 	Set(string, int64)
 	Incr(string)
-	IncrN(string, uint)
+	IncrN(string, int64)
 	Keys() []string
 	Sum() int64
 	String() string
@@ -34,7 +34,7 @@ func (c MemCounter) Incr(k string) {
 	c[k] += 1
 }
 
-func (c MemCounter) IncrN(k string, n uint) {
+func (c MemCounter) IncrN(k string, n int64) {
 	c[k] += n
 }
 

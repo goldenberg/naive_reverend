@@ -12,6 +12,8 @@ type NaiveBayes struct {
 	ClassCounter            counter.Interface
 }
 
+var _ Interface = new(NaiveBayes)
+
 func New() *NaiveBayes {
 	return &NaiveBayes{store.NewRedisStore(), counter.New()}
 }

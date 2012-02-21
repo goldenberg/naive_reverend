@@ -19,13 +19,9 @@ func New() *NaiveBayes {
 }
 
 func (nb *NaiveBayes) Train(datum *Datum) {
-	nb.TrainN(datum, datum.Count)
-}
-
-func (nb *NaiveBayes) TrainN(datum *Datum, n int64) {
-	nb.ClassCounter.IncrN(datum.Class, n)
+	nb.ClassCounter.IncrN(datum.Class, datum.Count)
 	for _, f := range datum.Features {
-		nb.FeatureCategoryCounters.IncrN(f, datum.Class, n)
+		nb.FeatureCategoryCounters.IncrN(f, datum.Class, datum.Count)
 	}
 }
 

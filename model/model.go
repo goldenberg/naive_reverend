@@ -13,6 +13,5 @@ type Datum struct {
 
 type Interface interface {
 	Train(datum *Datum)
-	TrainN(datum *Datum, n int64)
 	Classify(features []string) (estimator distribution.Interface, explain map[string]interface{})
 }

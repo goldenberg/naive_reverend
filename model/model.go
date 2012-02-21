@@ -8,7 +8,6 @@ import (
 type Datum struct {
 	Class    string
 	Features []string
-	Count    int64
 }
 
 type Interface interface {

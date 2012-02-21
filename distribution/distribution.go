@@ -16,23 +16,9 @@ type CounterDistribution struct {
 	counter counter.Interface
 }
 
-var _ Interface = new(CounterDistribution)
-
-func NewCounterDistribution(c counter.Interface) (d Interface) {
-	return &CounterDistribution{c}
-}
-
-func (d *CounterDistribution) Get(k string) float64 {
-	return float64(d.counter.Get(k)) / float64(d.counter.Sum())
-}
-
 // Return a list of keys for this counter
 func (d *CounterDistribution) Keys() []string {
 	return d.counter.Keys()
-}
-
-func (d *CounterDistribution) LogGet(k string) float64 {
-	return math.Log(float64(d.counter.Get(k)+1)) - math.Log(float64(d.counter.Sum()+1))
 }
 
 func Multiply(a, b Interface) Interface {
@@ -86,38 +72,6 @@ func ArgMax(d Interface) (maxKey string, maxProb float64) {
 	return
 }
 
-type DerivedDistribution struct {
-	logProbabilities map[string]float64
-}
-
-var _ Interface = new(DerivedDistribution)
-
-func NewDerivedDistribution() *DerivedDistribution {
-	return &DerivedDistribution{make(map[string]float64)}
-}
-
-func (d *DerivedDistribution) Get(k string) float64 {
-	return math.Exp(d.LogGet(k))
-}
-
-// Return a list of keys for this counter
-func (d *DerivedDistribution) Keys() []string {
-	result := make([]string, 0, len(d.logProbabilities))
-
-	for k := range d.logProbabilities {
-		result = append(result, k)
-	}
-
-	return result
-}
-
-func (d *DerivedDistribution) LogGet(k string) float64 {
-	logProb, ok := d.logProbabilities[k]
-	if ok {
-		return logProb
-	}
-	return 0.0
-}
 
 // Combine two sets of keys w/o duplicates
 // borrowed from mattj

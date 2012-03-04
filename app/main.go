@@ -21,6 +21,7 @@ func main() {
 	profile := flag.Bool("p", false, "write profiles to ./")
 	train := flag.String("t", "", "train using the data in this file")
 	evaluate := flag.String("e", "", "train using the data in this file")
+	ngram := flag.Int("n", 2, "ngram length")
 
 	flag.Parse()
 
@@ -28,7 +29,8 @@ func main() {
 	evalData := make(chan *model.Datum, 100)
 	quit := make(chan bool)
 
-	nb := model.New()
+
+	nb := model.NewNGramModel(*ngram)
 
 	quitServer := make(chan bool)
 
@@ -62,7 +64,7 @@ func main() {
 	<-quitServer
 }
 
-func Evaluate(evalData chan *model.Datum, nb *model.NaiveBayes) {
+func Evaluate(evalData chan *model.Datum, nb model.Interface) {
 	var correct, wrong uint
 	evalStartTime := time.Now()
 	for d := range evalData {
@@ -93,7 +95,7 @@ func DumpProfiles() {
 	return
 }
 
-func Serve(nb *model.NaiveBayes, quit chan bool) {
+func Serve(nb model.Interface, quit chan bool) {
 	fmt.Println("serving")
 	http.HandleFunc("/hello", HelloServer)
 	http.Handle("/status", StatusHandler{nb})
@@ -119,7 +121,7 @@ func HelloServer(w http.ResponseWriter, req *http.Request) {
 }
 
 type ClassifyHandler struct {
-	nb *model.NaiveBayes
+	nb model.Interface
 }
 
 func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -139,15 +141,15 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 type StatusHandler struct {
-	nb *model.NaiveBayes
+	nb model.Interface
 }
 
 func (h StatusHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	prior := distribution.NewLaplacian(h.nb.ClassCounter)
+	// prior := distribution.NewLaplacian(h.nb.ClassCounter)
 	jsonWriter := json.NewEncoder(w)
 	jsonWriter.Encode(map[string]interface{}{
-		"prior":        distribution.JSON(prior),
-		"num_features": h.nb.FeatureCategoryCounters.Size(),
+		// "prior":        distribution.JSON(prior),
+		// "num_features": h.nb.FeatureCategoryCounters.Size(),
 	})
 	return
 }

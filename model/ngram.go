@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	BLANK = "___"
+	BLANK = "_"
 )
 
 func Generate(terms []string, n int) (ngrams [][]string) {
@@ -45,10 +45,6 @@ type NGramModel struct {
 var _ Interface = new(NGramModel)
 
 func NewNGramModel(n int) *NGramModel {
-	// var stores = make([]store.Interface, n)
-	// for i := 1; i <= n; i++ {
-	// 	stores[i] = storeFactory()
-	// }
 	return &NGramModel{n, store.NewRedisStore()}
 }
 

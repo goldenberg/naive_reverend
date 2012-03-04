@@ -7,60 +7,60 @@ import (
 type nGramTest struct {
 	n        int
 	tokens   []string
-	expected [][]string
+	expected []NGram
 }
 
 var nGramTests = []nGramTest{
-	nGramTest{1, []string{}, [][]string{}},
-	nGramTest{1, []string{"a"}, [][]string{
-		[]string{"a"},
+	nGramTest{1, []string{}, []NGram{}},
+	nGramTest{1, []string{"a"}, []NGram{
+		NGram{"a"},
 	}},
-	nGramTest{1, []string{"a", "b"}, [][]string{
-		[]string{"a"},
-		[]string{"b"},
-	}},
-
-	nGramTest{2, []string{}, [][]string{}},
-	nGramTest{2, []string{"a"}, [][]string{
-		[]string{BLANK, "a"},
-		[]string{"a", BLANK}}},
-	nGramTest{2, []string{"a", "b"}, [][]string{
-		[]string{BLANK, "a"},
-		[]string{"a", "b"},
-		[]string{"b", BLANK}}},
-	nGramTest{2, []string{"a", "b", "c"}, [][]string{
-		[]string{BLANK, "a"},
-		[]string{"a", "b"},
-		[]string{"b", "c"},
-		[]string{"c", BLANK},
+	nGramTest{1, []string{"a", "b"}, []NGram{
+		NGram{"a"},
+		NGram{"b"},
 	}},
 
-	nGramTest{3, []string{}, [][]string{}},
-	nGramTest{3, []string{"a"}, [][]string{
-		[]string{BLANK, BLANK, "a"},
-		[]string{BLANK, "a", BLANK},
-		[]string{"a", BLANK, BLANK},
+	nGramTest{2, []string{}, []NGram{}},
+	nGramTest{2, []string{"a"}, []NGram{
+		NGram{BLANK, "a"},
+		NGram{"a", BLANK}}},
+	nGramTest{2, []string{"a", "b"}, []NGram{
+		NGram{BLANK, "a"},
+		NGram{"a", "b"},
+		NGram{"b", BLANK}}},
+	nGramTest{2, []string{"a", "b", "c"}, []NGram{
+		NGram{BLANK, "a"},
+		NGram{"a", "b"},
+		NGram{"b", "c"},
+		NGram{"c", BLANK},
 	}},
-	nGramTest{3, []string{"a", "b"}, [][]string{
-		[]string{BLANK, BLANK, "a"},
-		[]string{BLANK, "a", "b"},
-		[]string{"a", "b", BLANK},
-		[]string{"b", BLANK, BLANK},
+
+	nGramTest{3, []string{}, []NGram{}},
+	nGramTest{3, []string{"a"}, []NGram{
+		NGram{BLANK, BLANK, "a"},
+		NGram{BLANK, "a", BLANK},
+		NGram{"a", BLANK, BLANK},
 	}},
-	nGramTest{3, []string{"a", "b", "c"}, [][]string{
-		[]string{BLANK, BLANK, "a"},
-		[]string{BLANK, "a", "b"},
-		[]string{"a", "b", "c"},
-		[]string{"b", "c", BLANK},
-		[]string{"c", BLANK, BLANK},
+	nGramTest{3, []string{"a", "b"}, []NGram{
+		NGram{BLANK, BLANK, "a"},
+		NGram{BLANK, "a", "b"},
+		NGram{"a", "b", BLANK},
+		NGram{"b", BLANK, BLANK},
 	}},
-	nGramTest{3, []string{"a", "b", "c", "d"}, [][]string{
-		[]string{BLANK, BLANK, "a"},
-		[]string{BLANK, "a", "b"},
-		[]string{"a", "b", "c"},
-		[]string{"b", "c", "d"},
-		[]string{"c", "d", BLANK},
-		[]string{"d", BLANK, BLANK},
+	nGramTest{3, []string{"a", "b", "c"}, []NGram{
+		NGram{BLANK, BLANK, "a"},
+		NGram{BLANK, "a", "b"},
+		NGram{"a", "b", "c"},
+		NGram{"b", "c", BLANK},
+		NGram{"c", BLANK, BLANK},
+	}},
+	nGramTest{3, []string{"a", "b", "c", "d"}, []NGram{
+		NGram{BLANK, BLANK, "a"},
+		NGram{BLANK, "a", "b"},
+		NGram{"a", "b", "c"},
+		NGram{"b", "c", "d"},
+		NGram{"c", "d", BLANK},
+		NGram{"d", BLANK, BLANK},
 	}},
 }
 
@@ -74,7 +74,7 @@ func TestGenerate(t *testing.T) {
 	}
 }
 
-func nestedEqual(x, y [][]string) bool {
+func nestedEqual(x, y []NGram) bool {
 	if len(x) != len(y) {
 		return false
 	}

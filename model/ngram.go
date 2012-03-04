@@ -12,19 +12,21 @@ const (
 	BLANK = "_"
 )
 
-func Generate(terms []string, n int) (ngrams [][]string) {
+type NGram []string
+
+func Generate(terms []string, n int) (ngrams []NGram) {
 	if len(terms) == 0 {
-		return [][]string{}
+		return []NGram{}
 	}
-	ngrams = make([][]string, 0)
+	ngrams = make([]NGram, 0)
 	for i := 0; i < len(terms)+n-1; i++ {
 		ngrams = append(ngrams, getNgram(terms, i, n))
 	}
 	return
 }
 
-func getNgram(terms []string, pos, n int) (ngram []string) {
-	ngram = make([]string, 0)
+func getNgram(terms []string, pos, n int) (ngram NGram) {
+	ngram = make(NGram, 0)
 	start := pos - n + 1
 
 	for i := start; i <= pos; i++ {
@@ -35,6 +37,10 @@ func getNgram(terms []string, pos, n int) (ngram []string) {
 		}
 	}
 	return
+}
+
+func ngramToStr(ngram NGram) string {
+	return strings.Join(ngram, " ")
 }
 
 type NGramModel struct {
@@ -52,7 +58,7 @@ func (m *NGramModel) Prior(class string) (c counter.Interface, ok bool) {
 	return nil, false
 }
 
-func (m *NGramModel) Lookup(ngram []string) (c counter.Interface, ok bool) {
+func (m *NGramModel) ngramLookup(ngram NGram) (c counter.Interface, ok bool) {
 	n := len(ngram)
 	if n > m.n {
 		panic(fmt.Sprintf("ngram must be %d or shorter. Got %v", m.n, ngram))
@@ -61,11 +67,11 @@ func (m *NGramModel) Lookup(ngram []string) (c counter.Interface, ok bool) {
 	return
 }
 
-func ngramToStr(ngram []string) string {
-	return strings.Join(ngram, " ")
+func (m *NGramModel) classLookup(ngram NGram) (c counter.Interface, ok bool) {
+	return nil, false
 }
 
-func (m *NGramModel) incrN(ngram []string, incr int64) {
+func (m *NGramModel) incrN(ngram NGram, incr int64) {
 	n := len(ngram)
 	fmt.Println("ngram: ", ngram)
 	denominator := ngramToStr(ngram)
@@ -78,8 +84,8 @@ func (m *NGramModel) incrN(ngram []string, incr int64) {
 	m.s.IncrN(numerator, denominator, incr)
 }
 
-func (m *NGramModel) Estimate(ngram []string) distribution.Interface {
-	c, ok := m.Lookup(ngram)
+func (m *NGramModel) Estimate(ngram NGram) distribution.Interface {
+	c, ok := m.classLookup(ngram)
 	if !ok {
 		c = counter.New()
 	}

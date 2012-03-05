@@ -10,6 +10,9 @@ import (
 
 const (
 	BLANK = "_"
+	NGRAM = "ngram"
+	PRIOR = "prior"
+	CLASS = "class"
 )
 
 type NGram []string
@@ -39,8 +42,8 @@ func getNgram(terms []string, pos, n int) (ngram NGram) {
 	return
 }
 
-func ngramToStr(ngram NGram) string {
-	return strings.Join(ngram, " ")
+func (ng NGram) String() string {
+	return strings.Join(ng, " ")
 }
 
 type NGramModel struct {
@@ -54,8 +57,19 @@ func NewNGramModel(n int) *NGramModel {
 	return &NGramModel{n, store.NewRedisStore()}
 }
 
-func (m *NGramModel) Prior(class string) (c counter.Interface, ok bool) {
-	return nil, false
+func (m *NGramModel) Prior() (c counter.Interface, ok bool) {
+	return m.fetch("prior", nil)
+}
+
+func (m *NGramModel) fetch(prefix string, ngram NGram) (c counter.Interface, ok bool) {
+	key := fmt.Sprintf("%v:%v", prefix, ngram.String())
+	c, ok = m.s.Fetch(key)
+	return
+}
+
+func (m *NGramModel) incr(prefix, numerator, denominator string, incr int64) {
+	key := fmt.Sprintf("%v:%v", prefix, numerator)
+	m.s.IncrN(key, denominator, incr)
 }
 
 func (m *NGramModel) ngramLookup(ngram NGram) (c counter.Interface, ok bool) {
@@ -63,25 +77,32 @@ func (m *NGramModel) ngramLookup(ngram NGram) (c counter.Interface, ok bool) {
 	if n > m.n {
 		panic(fmt.Sprintf("ngram must be %d or shorter. Got %v", m.n, ngram))
 	}
-	c, ok = m.s.Fetch(ngramToStr(ngram))
-	return
+	return m.fetch("ngram", ngram)
 }
 
 func (m *NGramModel) classLookup(ngram NGram) (c counter.Interface, ok bool) {
-	return nil, false
+	return m.fetch("class", ngram)
 }
 
-func (m *NGramModel) incrN(ngram NGram, incr int64) {
+func (m *NGramModel) incrPrior(class string, incr int64) {
+	// Increment "prior:", class
+	m.incr(PRIOR, "", class, incr)
+}
+
+func (m *NGramModel) incrNGram(ngram NGram, incr int64) {
 	n := len(ngram)
-	fmt.Println("ngram: ", ngram)
-	denominator := ngramToStr(ngram)
+	denominator := ngram.String()
 	var numerator string
 	if len(ngram) > 1 {
-		numerator = ngramToStr(ngram[:n-1])
+		numerator = ngram[:n-1].String()
 	} else {
 		numerator = ""
 	}
-	m.s.IncrN(numerator, denominator, incr)
+	m.incr(NGRAM, numerator, denominator, incr)
+}
+
+func (m *NGramModel) incrClasses(ngram NGram, class string, incr int64) {
+	m.incr(CLASS, ngram.String(), class, incr)
 }
 
 func (m *NGramModel) Estimate(ngram NGram) distribution.Interface {
@@ -93,10 +114,11 @@ func (m *NGramModel) Estimate(ngram NGram) distribution.Interface {
 }
 
 func (m *NGramModel) Train(datum *Datum) {
+	m.incrPrior(datum.Class, datum.Count)
 	for n := 1; n <= m.n; n++ {
 		for _, ngram := range Generate(datum.Features, n) {
-			fmt.Println("generated", ngram, "for", datum.Features)
-			m.incrN(ngram, datum.Count)
+			m.incrNGram(ngram, datum.Count)
+			m.incrClasses(ngram, datum.Class, datum.Count)
 		}
 	}
 }

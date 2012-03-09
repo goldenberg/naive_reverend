@@ -57,8 +57,14 @@ func NewNGramModel(n int) *NGramModel {
 	return &NGramModel{n, store.NewRedisStore()}
 }
 
-func (m *NGramModel) Prior() (c counter.Interface, ok bool) {
-	return m.fetch("prior", nil)
+func (m *NGramModel) Prior() (d distribution.Interface, ok bool) {
+	c, ok := m.fetch("prior", nil)
+	if ok {
+		d = distribution.NewLaplacian(c)
+	} else {
+		d = nil
+	}
+	return
 }
 
 func (m *NGramModel) fetch(prefix string, ngram NGram) (c counter.Interface, ok bool) {
@@ -124,5 +130,13 @@ func (m *NGramModel) Train(datum *Datum) {
 }
 
 func (m *NGramModel) Classify(features []string) (estimator distribution.Interface, explain map[string]interface{}) {
+	explain = make(map[string]interface{})
+	estimator, _ = m.Prior()
+	explain["prior"] = distribution.JSON(estimator)
+	for _, ngram := range Generate(features, m.n) {
+		ngram_est := m.Estimate(ngram)
+		estimator = distribution.Multiply(estimator, ngram_est)
+		explain[ngram.String()] = distribution.JSON(ngram_est)
+	}
 	return
 }

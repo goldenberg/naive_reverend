@@ -72,6 +72,21 @@ func ArgMax(d Interface) (maxKey string, maxProb float64) {
 	return
 }
 
+func Sum(d Interface) (sum float64) {
+	for _, k := range d.Keys() {
+		sum += d.Get(k)
+	}
+	return
+}
+
+func Normalize(d Interface) Interface {
+	logProbs := make(map[string]float64)
+	sum := Sum(d)
+	for _, k := range d.Keys() {
+		logProbs[k] = math.Log(d.Get(k) / sum)
+	}
+	return &DerivedDistribution{logProbs}
+}
 
 // Combine two sets of keys w/o duplicates
 // borrowed from mattj

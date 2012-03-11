@@ -176,5 +176,6 @@ func (m *NGramModel) Classify(features []string) (estimator distribution.Interfa
 		estimator = distribution.Multiply(estimator, ngram_est)
 		explain[ngram.String()] = distribution.JSON(ngram_est)
 	}
+	estimator = distribution.Normalize(estimator)
 	return
 }

@@ -47,7 +47,7 @@ func (ng NGram) String() string {
 }
 
 type NGramModel struct {
-	n int
+	N int
 	s store.Interface
 }
 
@@ -103,10 +103,6 @@ func (m *NGramModel) incr(prefix, numerator, denominator string, incr int64) int
  * Lookup an n-gram's frequency, i.e. C(w_1 ... w_n)
  */
 func (m *NGramModel) ngramLookup(ngram NGram) (c counter.Interface, ok bool) {
-	n := len(ngram)
-	if n > m.n {
-		panic(fmt.Sprintf("ngram must be %d or shorter. Got %v", m.n, ngram))
-	}
 	return m.fetch("ngram", ngram)
 }
 
@@ -159,7 +155,7 @@ func (m *NGramModel) ClassCount() int {
 
 func (m *NGramModel) Train(datum *Datum) {
 	m.incrPrior(datum.Class, datum.Count)
-	for n := 1; n <= m.n; n++ {
+	for n := 1; n <= m.N; n++ {
 		for _, ngram := range Generate(datum.Features, n) {
 			m.incrNGram(ngram, datum.Count)
 			m.incrClasses(ngram, datum.Class, datum.Count)
@@ -171,7 +167,7 @@ func (m *NGramModel) Classify(features []string) (estimator distribution.Interfa
 	explain = make(map[string]interface{})
 	estimator, _ = m.Prior()
 	explain["prior"] = distribution.JSON(estimator)
-	for _, ngram := range Generate(features, m.n) {
+	for _, ngram := range Generate(features, m.N) {
 		ngram_est := m.Estimate(ngram)
 		estimator = distribution.Multiply(estimator, ngram_est)
 		explain[ngram.String()] = distribution.JSON(ngram_est)

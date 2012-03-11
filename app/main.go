@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	corpus "naive_reverend/corpus"
 	model "naive_reverend/model"
 	distribution "naive_reverend/distribution"
 	"net/http"
@@ -28,7 +29,6 @@ func main() {
 	trainData := make(chan *model.Datum, 100)
 	evalData := make(chan *model.Datum, 100)
 	quit := make(chan bool)
-
 
 	nb := model.NewNGramModel(*ngram)
 
@@ -98,8 +98,8 @@ func DumpProfiles() {
 func Serve(nb model.Interface, quit chan bool) {
 	fmt.Println("serving")
 	http.HandleFunc("/hello", HelloServer)
-	http.Handle("/status", StatusHandler{nb})
 	http.Handle("/classify", ClassifyHandler{nb})
+	// http.Handle("/corpuses", CorpusHandler{map[string]corpus.Corpus})
 
 	err := http.ListenAndServe(":12345", nil)
 	if err != nil {
@@ -140,18 +140,12 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
-type StatusHandler struct {
-	nb model.Interface
+type CorpusHandler struct {
+	c corpus.Corpus
 }
 
-func (h StatusHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	// prior := distribution.NewLaplacian(h.nb.ClassCounter)
-	jsonWriter := json.NewEncoder(w)
-	jsonWriter.Encode(map[string]interface{}{
-	// "prior":        distribution.JSON(prior),
-	// "num_features": h.nb.FeatureCategoryCounters.Size(),
-	})
-	return
+func (h CorpusHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+
 }
 
 func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {

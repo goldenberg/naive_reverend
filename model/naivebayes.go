@@ -27,7 +27,7 @@ func (nb *NaiveBayes) Train(datum *Datum) {
 
 func (nb *NaiveBayes) Classify(features []string) (estimator distribution.Interface, explain map[string]interface{}) {
 	explain = make(map[string]interface{})
-	estimator = distribution.NewLaplacian(nb.ClassCounter)
+	estimator = distribution.NewMLE(nb.ClassCounter)
 
 	explain["prior"] = distribution.JSON(estimator)
 	// Println("Prior:", estimator)

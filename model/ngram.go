@@ -47,21 +47,22 @@ func (ng NGram) String() string {
 }
 
 type NGramModel struct {
-	N int
-	s store.Interface
+	N      int
+	Prefix string
+	s      store.Interface
 }
 
 var _ Interface = new(NGramModel)
 
-func NewNGramModel(n int) *NGramModel {
-	return &NGramModel{n, store.NewRedisStore()}
+func NewNGramModel(n int, prefix string) *NGramModel {
+	return &NGramModel{n, prefix, store.NewRedisStore()}
 }
 
 /*
  * Counter of number of instances in training set. i.e. N_c
  */
 func (m *NGramModel) priorCounter() (c counter.Interface, ok bool) {
-	return m.fetch("prior", nil)
+	return m.fetch("prior", "")
 }
 
 /*
@@ -69,11 +70,7 @@ func (m *NGramModel) priorCounter() (c counter.Interface, ok bool) {
  */
 func (m *NGramModel) Prior() (d distribution.Interface, ok bool) {
 	c, ok := m.priorCounter()
-	if ok {
-		d = distribution.NewLaplacian(c)
-	} else {
-		d = nil
-	}
+	d = distribution.NewLaplacian(c)
 	return
 }
 
@@ -88,14 +85,14 @@ func (m *NGramModel) Bins() int {
 	return 0
 }
 
-func (m *NGramModel) fetch(prefix string, ngram NGram) (c counter.Interface, ok bool) {
-	key := fmt.Sprintf("%v:%v", prefix, ngram.String())
+func (m *NGramModel) fetch(prefix, ngram string) (c counter.Interface, ok bool) {
+	key := fmt.Sprintf("%v:%v:%v", m.Prefix, prefix, ngram)
 	c, ok = m.s.Fetch(key)
 	return
 }
 
 func (m *NGramModel) incr(prefix, numerator, denominator string, incr int64) int64 {
-	key := fmt.Sprintf("%v:%v", prefix, numerator)
+	key := fmt.Sprintf("%v:%v:%v", m.Prefix, prefix, numerator)
 	return m.s.IncrN(key, denominator, incr)
 }
 
@@ -103,11 +100,11 @@ func (m *NGramModel) incr(prefix, numerator, denominator string, incr int64) int
  * Lookup an n-gram's frequency, i.e. C(w_1 ... w_n)
  */
 func (m *NGramModel) ngramLookup(ngram NGram) (c counter.Interface, ok bool) {
-	return m.fetch("ngram", ngram)
+	return m.fetch("ngram", ngram.String())
 }
 
 func (m *NGramModel) classLookup(ngram NGram) (c counter.Interface, ok bool) {
-	return m.fetch("class", ngram)
+	return m.fetch("class", ngram.String())
 }
 
 func (m *NGramModel) incrPrior(class string, incr int64) {
@@ -157,7 +154,7 @@ func (m *NGramModel) Train(datum *Datum) {
 	m.incrPrior(datum.Class, datum.Count)
 	for n := 1; n <= m.N; n++ {
 		for _, ngram := range Generate(datum.Features, n) {
-			m.incrNGram(ngram, datum.Count)
+			// m.incrNGram(ngram, datum.Count)
 			m.incrClasses(ngram, datum.Class, datum.Count)
 		}
 	}

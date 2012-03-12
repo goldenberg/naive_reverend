@@ -12,8 +12,9 @@ type RedisStore struct {
 }
 
 var _ Interface = new(RedisStore)
+var _ KVInterface = new(RedisStore)
 
-func NewRedisStore() Interface {
+func NewRedisStore() *RedisStore {
 	c := godis.New("", 0, "")
 	return &RedisStore{c}
 }
@@ -58,6 +59,22 @@ func (s *RedisStore) Size() (size int64) {
 	size, err := s.client.Dbsize()
 	if err != nil {
 		panic("couldn't get size")
+	}
+	return
+}
+
+func (s *RedisStore) Get(key string) (val string) {
+	r, err := s.client.Get(key)
+	if err != nil {
+		panic("couldn't Get")
+	}
+	return r.String()
+}
+
+func (s *RedisStore) Set(key, val string) {
+	err := s.client.Set(key, val)
+	if err != nil {
+		panic("couldn't Get")
 	}
 	return
 }

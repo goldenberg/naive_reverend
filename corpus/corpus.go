@@ -5,21 +5,18 @@ import (
 )
 
 type Corpus struct {
-	Name   string
-	Models []model.Interface
+	Name  string
+	Model model.Interface
 }
 
 func NewCorpus(name string) *Corpus {
-	return &Corpus{name, make([]model.Interface, 1)}
+	return *Corpus{name, model.NewNGramModel(3)}
 }
-
 /*
  * Train all the models for this corpus
  */
 func (c *Corpus) Train(d *model.Datum) {
-	for _, m := range c.Models {
-		m.Train(d)
-	}
+	c.Model.Train(d)
 }
 
 func (c *Corpus) String() string {

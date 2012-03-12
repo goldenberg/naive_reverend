@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"io"
 	"log"
-	corpus "naive_reverend/corpus"
 	model "naive_reverend/model"
 	distribution "naive_reverend/distribution"
+	store "naive_reverend/store"
 	"net/http"
 	"os"
-	"strings"
 	_ "net/http/pprof"
 	"time"
 	pprof "runtime/pprof"
@@ -23,6 +22,7 @@ func main() {
 	train := flag.String("t", "", "train using the data in this file")
 	evaluate := flag.String("e", "", "train using the data in this file")
 	ngram := flag.Int("n", 2, "ngram length")
+	corpus := flag.String("c", "", "corpus name")
 
 	flag.Parse()
 
@@ -30,12 +30,13 @@ func main() {
 	evalData := make(chan *model.Datum, 100)
 	quit := make(chan bool)
 
-	nb := model.NewNGramModel(*ngram)
+	nb := model.NewNGramModel(*ngram, *corpus)
+	kv := store.NewRedisStore()
 
 	quitServer := make(chan bool)
 
 	go ServeDebug()
-	go Serve(nb, quitServer)
+	go Serve(nb, kv, quitServer)
 
 	if *train != "" {
 		fmt.Println("Training on", *train)
@@ -95,11 +96,11 @@ func DumpProfiles() {
 	return
 }
 
-func Serve(nb model.Interface, quit chan bool) {
+func Serve(nb model.Interface, kv store.KVInterface, quit chan bool) {
 	fmt.Println("serving")
 	http.HandleFunc("/hello", HelloServer)
-	http.Handle("/classify", ClassifyHandler{nb})
-	// http.Handle("/corpuses", CorpusHandler{map[string]corpus.Corpus})
+	http.Handle("/classify", ClassifyHandler{})
+	// http.Handle("/corpuses", CorpusesHandler{kv})
 
 	err := http.ListenAndServe(":12345", nil)
 	if err != nil {
@@ -118,34 +119,6 @@ func ServeDebug() {
 
 func HelloServer(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "hello, world!")
-}
-
-type ClassifyHandler struct {
-	nb model.Interface
-}
-
-func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	req.ParseForm()
-	query := req.FormValue("q")
-	features := strings.Split(query, ",")
-	estimator, explain := h.nb.Classify(features)
-	prediction, _ := distribution.ArgMax(estimator)
-	output := map[string]interface{}{
-		"prediction": prediction,
-		"estimator":  distribution.JSON(estimator),
-		"explain":    explain,
-	}
-	jsonWriter := json.NewEncoder(w)
-	jsonWriter.Encode(output)
-	return
-}
-
-type CorpusHandler struct {
-	c corpus.Corpus
-}
-
-func (h CorpusHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-
 }
 
 func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {

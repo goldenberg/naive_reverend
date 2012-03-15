@@ -50,7 +50,7 @@ func (s *RedisStore) Incr(name, key string) int64 {
 func (s *RedisStore) IncrN(name, key string, n int64) int64 {
 	val, err := s.client.Hincrby(name, key, n)
 	if err != nil {
-		panic("err: ")
+		panic(fmt.Sprintf("err: ", err))
 	}
 	return val
 }

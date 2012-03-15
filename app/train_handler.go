@@ -3,20 +3,13 @@ package main
 import (
 	"strings"
 	"strconv"
-	"encoding/json"
-	// corpus "naive_reverend/corpus"
 	model "naive_reverend/model"
-	// store "naive_reverend/store"
-	distribution "naive_reverend/distribution"
+	store "naive_reverend/store"
 	"net/http"
 )
 
-const (
-	CORPUSES_KEY = "__CORPUSES__"
-)
-
 type TrainHandler struct {
-
+	s store.Interface
 }
 
 func (h TrainHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -30,15 +23,15 @@ func (h TrainHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		n = 2
 	}
 
-	count := strconv.Atoi(req.FormValue("count"))
+	count, err := strconv.Atoi(req.FormValue("count"))
 	if err != nil {
 		count = 1
 	}
 
-	m := model.NewNGramModel(n, corpus)
+	m := model.NewNGramModel(h.s, n, corpus)
 
 	features := strings.Split(query, ",")
-	d := model.Datum{class, features, count}
+	d := &model.Datum{class, features, int64(count)}
 	m.Train(d)
 	return
 }

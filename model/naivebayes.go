@@ -14,8 +14,8 @@ type NaiveBayes struct {
 
 var _ Interface = new(NaiveBayes)
 
-func New() *NaiveBayes {
-	return &NaiveBayes{store.NewRedisStore(), counter.New()}
+func New(s store.Interface) *NaiveBayes {
+	return &NaiveBayes{s, counter.New()}
 }
 
 func (nb *NaiveBayes) Train(datum *Datum) {

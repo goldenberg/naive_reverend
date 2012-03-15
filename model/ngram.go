@@ -54,8 +54,8 @@ type NGramModel struct {
 
 var _ Interface = new(NGramModel)
 
-func NewNGramModel(n int, prefix string) *NGramModel {
-	return &NGramModel{n, prefix, store.NewRedisStore()}
+func NewNGramModel(s store.Interface, n int, prefix string) *NGramModel {
+	return &NGramModel{n, prefix, s}
 }
 
 /*

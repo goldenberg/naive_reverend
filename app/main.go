@@ -30,7 +30,8 @@ func main() {
 	evalData := make(chan *model.Datum, 100)
 	quit := make(chan bool)
 
-	nb := model.NewNGramModel(*ngram, *corpus)
+	s := store.NewRedisStore()
+	nb := model.NewNGramModel(s, *ngram, *corpus)
 	kv := store.NewRedisStore()
 
 	quitServer := make(chan bool)
@@ -96,11 +97,13 @@ func DumpProfiles() {
 	return
 }
 
-func Serve(nb model.Interface, kv store.KVInterface, quit chan bool) {
+func Serve(nb model.Interface, s store.Interface, quit chan bool) {
 	fmt.Println("serving")
 	http.HandleFunc("/hello", HelloServer)
-	http.Handle("/classify", ClassifyHandler{})
-	// http.Handle("/corpuses", CorpusesHandler{kv})
+
+	// Will eventually be /corpus/classify, /corpus/train, and /corpus/params
+	http.Handle("/classify", ClassifyHandler{s})
+	http.Handle("/train", TrainHandler{s})
 
 	err := http.ListenAndServe(":12345", nil)
 	if err != nil {

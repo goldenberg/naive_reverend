@@ -30,9 +30,8 @@ func main() {
 	evalData := make(chan *model.Datum, 100)
 	quit := make(chan bool)
 
-	s := store.NewRedisStore()
-	nb := model.NewNGramModel(s, *ngram, *corpus)
 	kv := store.NewRedisStore()
+	nb := model.NewNGramModel(kv, *ngram, *corpus)
 
 	quitServer := make(chan bool)
 

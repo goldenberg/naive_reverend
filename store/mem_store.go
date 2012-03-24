@@ -17,6 +17,22 @@ func (s MemCounterStore) Fetch(name string) (c counter.Interface, ok bool) {
 	return
 }
 
+func (s MemCounterStore) FetchMany(names []string) (counters chan counter.Interface, ok bool) {
+	counters = make(chan counter.Interface, 100)
+	defer close(counters)
+	go func() {
+		for _, name := range names {
+			c, ok := s.Fetch(name)
+			if ok {
+				counters <- c
+			} else {
+				return
+			}
+		}
+	}()
+	return
+}
+
 func (s MemCounterStore) Incr(name, key string) int64 {
 	return s.IncrN(name, key, 1)
 }

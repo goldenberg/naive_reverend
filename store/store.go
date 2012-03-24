@@ -6,6 +6,7 @@ import (
 
 type Interface interface {
 	Fetch(name string) (c counter.Interface, ok bool)
+	FetchMany(names []string) (counters chan counter.Interface, ok bool)
 	Incr(name, key string) int64
 	IncrN(name, key string, n int64) int64
 	Size() int64

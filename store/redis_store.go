@@ -32,6 +32,22 @@ func (s *RedisStore) Fetch(name string) (c counter.Interface, ok bool) {
 	return
 }
 
+func (s *RedisStore) FetchMany(names []string) (counters chan counter.Interface, ok bool) {
+	counters = make(chan counter.Interface, 100)
+	defer close(counters)
+	go func() {
+		for _, name := range names {
+			c, ok := s.Fetch(name)
+			if ok {
+				counters <- c
+			} else {
+				return
+			}
+		}
+	}()
+	return
+}
+
 func stringMapToIntMap(strMap map[string]string) (out map[string]int64) {
 	out = make(map[string]int64, len(strMap))
 	for k, v := range strMap {

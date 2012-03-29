@@ -17,11 +17,11 @@ func (s MemCounterStore) Fetch(name string) (c counter.Interface, ok bool) {
 	return
 }
 
-func (s MemCounterStore) FetchMany(names []string) (counters chan counter.Interface, ok bool) {
+func (s MemCounterStore) FetchMany(names chan string) (counters chan counter.Interface, ok bool) {
 	counters = make(chan counter.Interface, 100)
 	defer close(counters)
 	go func() {
-		for _, name := range names {
+		for name := range names {
 			c, ok := s.Fetch(name)
 			if ok {
 				counters <- c

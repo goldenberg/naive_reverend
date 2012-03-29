@@ -88,6 +88,10 @@ func Normalize(d Interface) Interface {
 	return &DerivedDistribution{logProbs}
 }
 
+// func TopN(d Interface) Interface {
+
+// }
+
 // Combine two sets of keys w/o duplicates
 // borrowed from mattj
 func mergeKeys(a, b []string) <-chan string {

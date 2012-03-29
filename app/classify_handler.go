@@ -16,7 +16,7 @@ const (
 )
 
 type ClassifyHandler struct {
-	s store.Interface
+	pool *store.Pool
 }
 
 func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -27,7 +27,7 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		n = 2
 	}
-	m := model.NewNGramModel(h.s, n, corpus)
+	m := model.NewNGramModel(h.pool.Get(corpus), n)
 
 	features := strings.Split(query, ",")
 	estimator, explain := m.Classify(features)

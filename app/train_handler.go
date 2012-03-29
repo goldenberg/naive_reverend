@@ -9,7 +9,7 @@ import (
 )
 
 type TrainHandler struct {
-	s store.Interface
+	pool *store.Pool
 }
 
 func (h TrainHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -28,7 +28,7 @@ func (h TrainHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		count = 1
 	}
 
-	m := model.NewNGramModel(h.s, n, corpus)
+	m := model.NewNGramModel(h.pool.Get(corpus), n)
 
 	features := strings.Split(query, ",")
 	d := &model.Datum{class, features, int64(count)}

@@ -47,22 +47,21 @@ func (ng NGram) String() string {
 }
 
 type NGramModel struct {
-	N      int
-	Prefix string
-	s      store.Interface
+	N int
+	s store.Interface
 }
 
 var _ Interface = new(NGramModel)
 
-func NewNGramModel(s store.Interface, n int, prefix string) *NGramModel {
-	return &NGramModel{n, prefix, s}
+func NewNGramModel(s store.Interface, n int) *NGramModel {
+	return &NGramModel{n, s}
 }
 
 /*
  * Counter of number of instances in training set. i.e. N_c
  */
 func (m *NGramModel) priorCounter() (c counter.Interface, ok bool) {
-	return m.fetch("prior", "")
+	return m.fetch(PRIOR, "")
 }
 
 /*
@@ -86,25 +85,22 @@ func (m *NGramModel) Bins() int {
 }
 
 func (m *NGramModel) fetch(prefix, ngram string) (c counter.Interface, ok bool) {
-	key := fmt.Sprintf("%v:%v:%v", m.Prefix, prefix, ngram)
+	key := fmt.Sprintf("%v:%v", prefix, ngram)
+	fmt.Println("looking up", key)
 	c, ok = m.s.Fetch(key)
 	return
 }
 
 func (m *NGramModel) incr(prefix, numerator, denominator string, incr int64) int64 {
-	key := fmt.Sprintf("%v:%v:%v", m.Prefix, prefix, numerator)
+	key := fmt.Sprintf("%v:%v", prefix, numerator)
 	return m.s.IncrN(key, denominator, incr)
 }
 
 /*
  * Lookup an n-gram's frequency, i.e. C(w_1 ... w_n)
  */
-func (m *NGramModel) ngramLookup(ngram NGram) (c counter.Interface, ok bool) {
-	return m.fetch("ngram", ngram.String())
-}
-
 func (m *NGramModel) classLookup(ngram NGram) (c counter.Interface, ok bool) {
-	return m.fetch("class", ngram.String())
+	return m.fetch(CLASS, ngram.String())
 }
 
 func (m *NGramModel) incrPrior(class string, incr int64) {
@@ -139,6 +135,26 @@ func (m *NGramModel) Estimate(ngram NGram) distribution.Interface {
 	return distribution.NewLaplacian(c)
 }
 
+type ExplainedDistrib struct {
+	distribution distribution.Interface
+	ngram        NGram
+	explain      map[string]interface{}
+}
+
+func (m *NGramModel) EstimateMany(ngrams []NGram) (distribs chan ExplainedDistrib) {
+	distribs = make(chan ExplainedDistrib)
+	go func() {
+		defer close(distribs)
+		for _, ngram := range ngrams {
+			d := m.Estimate(ngram)
+			fmt.Println("estimated", ngram, "as", d.Keys())
+			explained := ExplainedDistrib{d, ngram, distribution.JSON(d)}
+			distribs <- explained
+		}
+	}()
+	return
+}
+
 /*
  * Number of values in the multinomial target feature distribution (B)
  */
@@ -164,10 +180,10 @@ func (m *NGramModel) Classify(features []string) (estimator distribution.Interfa
 	explain = make(map[string]interface{})
 	estimator, _ = m.Prior()
 	explain["prior"] = distribution.JSON(estimator)
-	for _, ngram := range Generate(features, m.N) {
-		ngram_est := m.Estimate(ngram)
-		estimator = distribution.Multiply(estimator, ngram_est)
-		explain[ngram.String()] = distribution.JSON(ngram_est)
+	ngrams := Generate(features, m.N)
+	for ngram_est := range m.EstimateMany(ngrams) {
+		estimator = distribution.Multiply(estimator, ngram_est.distribution)
+		explain[ngram_est.ngram.String()] = distribution.JSON(ngram_est.distribution)
 	}
 	estimator = distribution.Normalize(estimator)
 	return

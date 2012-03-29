@@ -93,7 +93,11 @@ func TopN(d Interface, n int) (out map[string]float64) {
 	// A heap would be slightly more efficient. eh.
 	sort.Sort(sorted)
 	out = make(map[string]float64)
-	for _, p := range sorted[len(sorted)-n:] {
+	startIdx := len(sorted) - n
+	if startIdx < 0 {
+		startIdx = 0
+	}
+	for _, p := range sorted[startIdx:] {
 		out[p.key] = p.val
 	}
 	return

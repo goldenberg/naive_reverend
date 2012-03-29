@@ -1,8 +1,8 @@
 package distribution
 
 import (
-	counter "naive_reverend/counter"
 	"math"
+	counter "naive_reverend/counter"
 )
 
 type Laplacian struct {
@@ -23,9 +23,19 @@ func NewMLE(c counter.Interface) (d Interface) {
 }
 
 func (d *Laplacian) Get(k string) float64 {
-	return float64(d.counter.Get(k)) / float64(d.counter.Sum())
+	classes := len(d.counter.Keys())
+	// If there aren't any classes, we assume it's a binary classification, which might not be true, but we don't know anything else.
+	if classes == 0 {
+		classes = 2
+	}
+	return (float64(d.counter.Get(k)) + d.alpha) / (float64(d.counter.Sum()) + d.alpha*float64(classes))
 }
 
 func (d *Laplacian) LogGet(k string) float64 {
-	return math.Log(float64(d.counter.Get(k))+d.alpha) - math.Log(float64(d.counter.Sum())+d.alpha*float64(len(d.counter.Keys())))
+	classes := len(d.counter.Keys())
+	// If there aren't any classes, we assume it's a binary classification, which might not be true, but we don't know anything else.
+	if classes == 0 {
+		classes = 2
+	}
+	return math.Log(float64(d.counter.Get(k))+d.alpha) - math.Log(float64(d.counter.Sum())+d.alpha*float64(classes))
 }

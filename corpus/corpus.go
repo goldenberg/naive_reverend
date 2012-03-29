@@ -12,6 +12,7 @@ type Corpus struct {
 func NewCorpus(name string) *Corpus {
 	return *Corpus{name, model.NewNGramModel(3)}
 }
+
 /*
  * Train all the models for this corpus
  */

@@ -1,13 +1,14 @@
 package main
 
 import (
-	"strings"
-	"strconv"
 	"encoding/json"
+	"strconv"
+	"strings"
 	// corpus "naive_reverend/corpus"
+	"fmt"
+	distribution "naive_reverend/distribution"
 	model "naive_reverend/model"
 	store "naive_reverend/store"
-	distribution "naive_reverend/distribution"
 	"net/http"
 )
 
@@ -27,6 +28,7 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		n = 2
 	}
+	fmt.Println(req)
 	m := model.NewNGramModel(h.s, n, corpus)
 
 	features := strings.Split(query, ",")

@@ -1,20 +1,20 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"log"
-	model "naive_reverend/model"
 	distribution "naive_reverend/distribution"
+	model "naive_reverend/model"
 	store "naive_reverend/store"
 	"net/http"
-	"os"
 	_ "net/http/pprof"
-	"time"
+	"os"
 	pprof "runtime/pprof"
-	"bufio"
+	"time"
 )
 
 func main() {

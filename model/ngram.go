@@ -2,10 +2,10 @@ package model
 
 import (
 	"fmt"
-	"strings"
 	counter "naive_reverend/counter"
-	store "naive_reverend/store"
 	distribution "naive_reverend/distribution"
+	store "naive_reverend/store"
+	"strings"
 )
 
 const (
@@ -162,13 +162,19 @@ func (m *NGramModel) Train(datum *Datum) {
 
 func (m *NGramModel) Classify(features []string) (estimator distribution.Interface, explain map[string]interface{}) {
 	explain = make(map[string]interface{})
-	estimator, _ = m.Prior()
-	explain["prior"] = distribution.JSON(estimator)
+	estimator = nil
 	for _, ngram := range Generate(features, m.N) {
 		ngram_est := m.Estimate(ngram)
-		estimator = distribution.Multiply(estimator, ngram_est)
+		if estimator == nil {
+			estimator = ngram_est
+		} else {
+			estimator = distribution.Multiply(estimator, ngram_est)
+		}
 		explain[ngram.String()] = distribution.JSON(ngram_est)
 	}
+	prior, _ := m.Prior()
+	explain["prior"] = distribution.JSON(estimator)
+	estimator = distribution.Multiply(estimator, prior)
 	estimator = distribution.Normalize(estimator)
 	return
 }

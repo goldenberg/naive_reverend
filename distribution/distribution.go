@@ -3,8 +3,8 @@ package distribution
 import (
 	"fmt"
 	"math"
-	"sort"
 	counter "naive_reverend/counter"
+	"sort"
 )
 
 type Interface interface {

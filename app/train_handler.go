@@ -1,11 +1,11 @@
 package main
 
 import (
-	"strings"
-	"strconv"
 	model "naive_reverend/model"
 	store "naive_reverend/store"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type TrainHandler struct {

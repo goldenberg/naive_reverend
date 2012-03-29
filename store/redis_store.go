@@ -1,9 +1,9 @@
 package store
 
 import (
+	"fmt"
 	godis "github.com/simonz05/godis"
 	counter "naive_reverend/counter"
-	"fmt"
 	"strconv"
 )
 

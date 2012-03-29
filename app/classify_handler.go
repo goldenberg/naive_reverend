@@ -37,7 +37,7 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		"estimator":  distribution.JSON(estimator),
 		"explain":    explain,
 	}
-	jsonWriter := json.NewEncoder(w)
-	jsonWriter.Encode(output)
+	jsonBytes, _ := json.MarshalIndent(output, "", "\t")
+	w.Write(jsonBytes)
 	return
 }

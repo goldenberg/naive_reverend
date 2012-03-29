@@ -3,6 +3,7 @@ package distribution
 import (
 	"fmt"
 	"math"
+	"sort"
 	counter "naive_reverend/counter"
 )
 
@@ -52,12 +53,12 @@ func Divide(a, b Interface) Interface {
 // 	return
 // }
 
-func JSON(d Interface) (out map[string]interface{}) {
-	out = make(map[string]interface{})
-	for _, k := range d.Keys() {
-		out[k] = d.Get(k)
-	}
-	return
+func JSON(d Interface) (out map[string]float64) {
+	// out = make(map[string]interface{})
+	// for _, k := range d.Keys() {
+	// 	out[k] = d.Get(k)
+	// }
+	return TopN(d, 10)
 }
 
 func ArgMax(d Interface) (maxKey string, maxProb float64) {
@@ -68,6 +69,32 @@ func ArgMax(d Interface) (maxKey string, maxProb float64) {
 			maxKey = k
 			maxProb = p
 		}
+	}
+	return
+}
+
+type stringFloatPair struct {
+	key string
+	val float64
+}
+
+type StringFloatSlice []*stringFloatPair
+
+func (s StringFloatSlice) Len() int           { return len(s) }
+func (s StringFloatSlice) Less(i, j int) bool { return s[i].val < s[j].val }
+func (s StringFloatSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+/* Sort the keys and values and return the top N classes and their probabilities. */
+func TopN(d Interface, n int) (out map[string]float64) {
+	sorted := make(StringFloatSlice, 0)
+	for _, k := range d.Keys() {
+		sorted = append(sorted, &stringFloatPair{k, d.Get(k)})
+	}
+	// A heap would be slightly more efficient. eh.
+	sort.Sort(sorted)
+	out = make(map[string]float64)
+	for _, p := range sorted[len(sorted)-n:] {
+		out[p.key] = p.val
 	}
 	return
 }

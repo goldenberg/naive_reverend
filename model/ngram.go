@@ -162,19 +162,13 @@ func (m *NGramModel) Train(datum *Datum) {
 
 func (m *NGramModel) Classify(features []string) (estimator distribution.Interface, explain map[string]interface{}) {
 	explain = make(map[string]interface{})
-	estimator = nil
+	estimator, _ = m.Prior()
+	explain["prior"] = distribution.JSON(estimator)
 	for _, ngram := range Generate(features, m.N) {
 		ngram_est := m.Estimate(ngram)
-		if estimator == nil {
-			estimator = ngram_est
-		} else {
-			estimator = distribution.Multiply(estimator, ngram_est)
-		}
+		estimator = distribution.Multiply(estimator, ngram_est)
 		explain[ngram.String()] = distribution.JSON(ngram_est)
 	}
-	prior, _ := m.Prior()
-	explain["prior"] = distribution.JSON(estimator)
-	estimator = distribution.Multiply(estimator, prior)
 	estimator = distribution.Normalize(estimator)
 	return
 }

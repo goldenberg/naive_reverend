@@ -23,7 +23,7 @@ func NewMLE(c counter.Interface) (d Interface) {
 }
 
 func (d *Laplacian) Get(k string) float64 {
-	classes := len(d.counter.Keys())
+	classes := d.counter.Len()
 	// If there aren't any classes, we assume it's a binary classification, which might not be true, but we don't know anything else.
 	if classes == 0 {
 		classes = 2
@@ -32,7 +32,7 @@ func (d *Laplacian) Get(k string) float64 {
 }
 
 func (d *Laplacian) LogGet(k string) float64 {
-	classes := len(d.counter.Keys())
+	classes := d.counter.Len()
 	// If there aren't any classes, we assume it's a binary classification, which might not be true, but we don't know anything else.
 	if classes == 0 {
 		classes = 2

@@ -24,7 +24,7 @@ func (s *RedisStore) Fetch(name string) (c counter.Interface, ok bool) {
 	ok = (err == nil)
 	if ok {
 		intMap := stringMapToIntMap(r.StringMap())
-		c = counter.MemCounter(intMap)
+		c = counter.NewCounter(intMap)
 		if len(intMap) == 0 {
 			ok = false
 		}

@@ -22,7 +22,7 @@ type ClassifyHandler struct {
 func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	query := req.FormValue("q")
-	corpus := req.FormValue("c")
+	corpus := req.FormValue("corpus")
 	n, err := strconv.Atoi(req.FormValue("n"))
 	if err != nil {
 		n = 2

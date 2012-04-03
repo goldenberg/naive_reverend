@@ -11,6 +11,7 @@ type Interface interface {
 	Get(k string) float64
 	Keys() []string
 	LogGet(k string) float64
+	Len() int
 }
 
 type CounterDistribution struct {

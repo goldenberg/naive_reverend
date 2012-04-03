@@ -36,3 +36,7 @@ func (d *DerivedDistribution) LogGet(k string) float64 {
 	}
 	return 0.0
 }
+
+func (d *DerivedDistribution) Len() int {
+	return len(d.logProbabilities)
+}

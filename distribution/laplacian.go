@@ -39,3 +39,7 @@ func (d *Laplacian) LogGet(k string) float64 {
 	}
 	return math.Log(float64(d.counter.Get(k))+d.alpha) - math.Log(float64(d.counter.Sum())+d.alpha*float64(classes))
 }
+
+func (d *Laplacian) Len() int {
+	return d.counter.Len()
+}

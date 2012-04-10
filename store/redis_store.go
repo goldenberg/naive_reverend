@@ -8,7 +8,7 @@ import (
 )
 
 type RedisStore struct {
-	client    *godis.PipeClient
+	client    *godis.Client
 	keyPrefix string
 }
 
@@ -16,7 +16,7 @@ var _ Interface = new(RedisStore)
 var _ KVInterface = new(RedisStore)
 
 func NewRedisStore(keyPrefix string) Interface {
-	client := godis.NewPipeClient("", 0, "")
+	client := godis.New("", 0, "")
 	return &RedisStore{client, keyPrefix}
 }
 
@@ -25,8 +25,7 @@ func (s *RedisStore) dbKey(k string) string {
 }
 
 func (s *RedisStore) Fetch(name string) (c counter.Interface, ok bool) {
-<<<<<<< HEAD
-	r, err := s.client.Hgetall(name)
+	r, err := s.client.Hgetall(s.dbKey(name))
 	ok = (err == nil)
 	if ok {
 		intMap := stringMapToIntMap(r.StringMap())

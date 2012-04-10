@@ -30,14 +30,8 @@ func main() {
 	evalData := make(chan *model.Datum, 100)
 	quit := make(chan bool)
 
-<<<<<<< HEAD
-	s := store.NewRedisStore()
-	nb := model.NewNGramModel(s, *ngram, *corpus)
-	kv := store.NewRedisStore()
-=======
 	pool := store.NewPool(store.NewRedisStore)
 	nb := model.NewNGramModel(pool.Get(*corpus), *ngram)
->>>>>>> df7ecd4... initial work toward pipelining. might be misguided
 
 	quitServer := make(chan bool)
 

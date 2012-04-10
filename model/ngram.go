@@ -62,12 +62,6 @@ func (m *NGramModel) incr(prefix, numerator, denominator string, incr int64) int
 	return m.s.IncrN(key, denominator, incr)
 }
 
-<<<<<<< HEAD
-=======
-/*
- * Lookup an n-gram's frequency, i.e. C(w_1 ... w_n)
- */
->>>>>>> df7ecd4... initial work toward pipelining. might be misguided
 func (m *NGramModel) classLookup(ngram NGram) (c counter.Interface, ok bool) {
 	return m.fetch(CLASS, ngram.String())
 }

@@ -13,15 +13,14 @@ const (
 )
 
 type NGramModel struct {
-	N      int
-	Prefix string
-	s      store.Interface
+	N int
+	s store.Interface
 }
 
 var _ Interface = new(NGramModel)
 
-func NewNGramModel(s store.Interface, n int, prefix string) *NGramModel {
-	return &NGramModel{n, prefix, s}
+func NewNGramModel(s store.Interface, n int) *NGramModel {
+	return &NGramModel{n, s}
 }
 
 /*
@@ -52,16 +51,23 @@ func (m *NGramModel) Bins() int {
 }
 
 func (m *NGramModel) fetch(prefix, ngram string) (c counter.Interface, ok bool) {
-	key := fmt.Sprintf("%v:%v:%v", m.Prefix, prefix, ngram)
+	key := fmt.Sprintf("%v:%v", prefix, ngram)
+	fmt.Println("looking up", key)
 	c, ok = m.s.Fetch(key)
 	return
 }
 
 func (m *NGramModel) incr(prefix, numerator, denominator string, incr int64) int64 {
-	key := fmt.Sprintf("%v:%v:%v", m.Prefix, prefix, numerator)
+	key := fmt.Sprintf("%v:%v", prefix, numerator)
 	return m.s.IncrN(key, denominator, incr)
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * Lookup an n-gram's frequency, i.e. C(w_1 ... w_n)
+ */
+>>>>>>> df7ecd4... initial work toward pipelining. might be misguided
 func (m *NGramModel) classLookup(ngram NGram) (c counter.Interface, ok bool) {
 	return m.fetch(CLASS, ngram.String())
 }

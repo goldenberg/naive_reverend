@@ -8,18 +8,24 @@ import (
 )
 
 type RedisStore struct {
-	client *godis.Client
+	client    *godis.PipeClient
+	keyPrefix string
 }
 
 var _ Interface = new(RedisStore)
 var _ KVInterface = new(RedisStore)
 
-func NewRedisStore() *RedisStore {
-	c := godis.New("", 0, "")
-	return &RedisStore{c}
+func NewRedisStore(keyPrefix string) Interface {
+	client := godis.NewPipeClient("", 0, "")
+	return &RedisStore{client, keyPrefix}
+}
+
+func (s *RedisStore) dbKey(k string) string {
+	return fmt.Sprintf("%s:%s", s.keyPrefix, k)
 }
 
 func (s *RedisStore) Fetch(name string) (c counter.Interface, ok bool) {
+<<<<<<< HEAD
 	r, err := s.client.Hgetall(name)
 	ok = (err == nil)
 	if ok {
@@ -48,13 +54,17 @@ func (s *RedisStore) Incr(name, key string) int64 {
 }
 
 func (s *RedisStore) IncrN(name, key string, n int64) int64 {
-	val, err := s.client.Hincrby(name, key, n)
+	val, err := s.client.Hincrby(s.dbKey(name), key, n)
 	if err != nil {
 		panic(fmt.Sprintf("err: ", err))
 	}
 	return val
 }
 
+/*
+ * Now that we have multiple keyspaces, this isn't correct. It gets
+ * the size across all keyspaces.
+ */
 func (s *RedisStore) Size() (size int64) {
 	size, err := s.client.Dbsize()
 	if err != nil {
@@ -64,7 +74,7 @@ func (s *RedisStore) Size() (size int64) {
 }
 
 func (s *RedisStore) Get(key string) (val string) {
-	r, err := s.client.Get(key)
+	r, err := s.client.Get(s.dbKey(key))
 	if err != nil {
 		panic("couldn't Get")
 	}
@@ -72,7 +82,7 @@ func (s *RedisStore) Get(key string) (val string) {
 }
 
 func (s *RedisStore) Set(key, val string) {
-	err := s.client.Set(key, val)
+	err := s.client.Set(s.dbKey(key), val)
 	if err != nil {
 		panic("couldn't Get")
 	}

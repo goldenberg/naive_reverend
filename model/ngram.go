@@ -12,6 +12,43 @@ const (
 	CLASS = "class"
 )
 
+<<<<<<< HEAD
+=======
+type NGram []string
+
+/* Generate computes n-grams using a sliding window of size n. 
+The terms are pre-pended and extended with n - 1 BLANKs. */
+func Generate(terms []string, n int) (ngrams []NGram) {
+	if len(terms) == 0 {
+		return []NGram{}
+	}
+	ngrams = make([]NGram, 0)
+	for i := 0; i < len(terms)+n-1; i++ {
+		ngrams = append(ngrams, getNgram(terms, i, n))
+	}
+	return
+}
+
+func getNgram(terms []string, pos, n int) (ngram NGram) {
+	ngram = make(NGram, 0)
+	start := pos - n + 1
+
+	for i := start; i <= pos; i++ {
+		if i < 0 || i >= len(terms) {
+			ngram = append(ngram, BLANK)
+		} else {
+			ngram = append(ngram, terms[i])
+		}
+	}
+	return
+}
+
+/* String joins the n-gram together with spaces. */
+func (ng NGram) String() string {
+	return strings.Join(ng, " ")
+}
+
+>>>>>>> pipeline_requests
 type NGramModel struct {
 	N int
 	s store.Interface
@@ -62,6 +99,12 @@ func (m *NGramModel) incr(prefix, numerator, denominator string, incr int64) int
 	return m.s.IncrN(key, denominator, incr)
 }
 
+<<<<<<< HEAD
+=======
+/*
+ * Lookup an n-gram's frequency across all labels, i.e. C(w_1 ... w_n)
+ */
+>>>>>>> pipeline_requests
 func (m *NGramModel) classLookup(ngram NGram) (c counter.Interface, ok bool) {
 	return m.fetch(CLASS, ngram.String())
 }
@@ -87,7 +130,7 @@ func (m *NGramModel) Estimate(ngram NGram) distribution.Interface {
 }
 
 /*
- * Number of values in the multinomial target feature distribution (B)
+ * Number of possible classes.
  */
 func (m *NGramModel) ClassCount() int {
 	d, ok := m.Prior()
@@ -97,6 +140,8 @@ func (m *NGramModel) ClassCount() int {
 	return d.Len()
 }
 
+/* Train adds a new datum to the corpus by incrementing counts for 
+all of its ngrams. */
 func (m *NGramModel) Train(datum *Datum) {
 	m.incrPrior(datum.Class, datum.Count)
 	for n := 1; n <= m.N; n++ {

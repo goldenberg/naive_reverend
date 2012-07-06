@@ -18,21 +18,21 @@ type CounterDistribution struct {
 	counter counter.Interface
 }
 
-// Return a list of keys for this counter
+// Keys returns a list of all of the keys for this counter
 func (d *CounterDistribution) Keys() []string {
 	return d.counter.Keys()
 }
 
+// Multiply two distributions by adding their log probabilities.
 func Multiply(a, b Interface) Interface {
 	logProbs := make(map[string]float64)
-	// fmt.Println("Multiply a:", a, "b:", b)
 	for k := range mergeKeys(a.Keys(), b.Keys()) {
-		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
 		logProbs[k] = a.LogGet(k) + b.LogGet(k)
 	}
 	return &DerivedDistribution{logProbs}
 }
 
+// Divide two distributions by subtracting their log probabilities.
 func Divide(a, b Interface) Interface {
 	logProbs := make(map[string]float64)
 	fmt.Println("Divide a:", a, "b:", b)
@@ -43,16 +43,16 @@ func Divide(a, b Interface) Interface {
 	return &DerivedDistribution{logProbs}
 }
 
-// func JSON(d Interface) (out map[string]interface{}) {
-// 	out = make(map[string]interface{})
-// 	for _, k := range d.Keys() {
-// 		out[k] = map[string]float64{
-// 			"p(k)":      d.Get(k),
-// 			"log(p(k))": d.LogGet(k),
-// 		}
-// 	}
-// 	return
-// }
+func JSONWithLogs(d Interface) (out map[string]interface{}) {
+	out = make(map[string]interface{})
+	for _, k := range d.Keys() {
+		out[k] = map[string]float64{
+			"p(k)":      d.Get(k),
+			"log(p(k))": d.LogGet(k),
+		}
+	}
+	return
+}
 
 func JSON(d Interface) (out map[string]float64) {
 	// out = make(map[string]interface{})
@@ -63,10 +63,10 @@ func JSON(d Interface) (out map[string]float64) {
 }
 
 func ArgMax(d Interface) (maxKey string, maxProb float64) {
-	maxProb = math.Inf(-1)
+	maxProb = nil
 	for _, k := range d.Keys() {
 		p := d.Get(k)
-		if p > maxProb {
+		if maxProb == nil || p > maxProb {
 			maxKey = k
 			maxProb = p
 		}

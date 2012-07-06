@@ -43,7 +43,7 @@ func (c *MemCounter) Get(k string) int64 {
 func (c *MemCounter) Set(k string, v int64) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	prevCount = c.counts[k]
+	prevCount := c.counts[k]
 	c.counts[k] = v
 	c.sum += v - prevCount
 }
@@ -88,9 +88,9 @@ func (c *MemCounter) Sum() (result int64) {
 	return c.sum
 }
 
-func (c *MemCounter) computeSum() (result int64) {
+func (c *MemCounter) computeSum() (sum int64) {
 	for _, v := range c.counts {
-		result += v
+		sum += v
 	}
 	return
 }

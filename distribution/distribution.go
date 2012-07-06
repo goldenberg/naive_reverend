@@ -3,7 +3,6 @@
 package distribution
 
 import (
-	"fmt"
 	"math"
 	counter "naive_reverend/counter"
 	"sort"

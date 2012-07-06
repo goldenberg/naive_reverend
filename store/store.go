@@ -1,3 +1,5 @@
+// Package store provides an interface for fetching and incrementing counters
+// in memory or in a persistent K/V store.
 package store
 
 import (
@@ -10,4 +12,3 @@ type Interface interface {
 	IncrN(name, key string, n int64) int64
 	Size() int64
 }
-

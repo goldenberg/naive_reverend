@@ -1,3 +1,5 @@
+// Package distribution provides an interface, implementations and utilities
+// for working with discrete probability distributions.
 package distribution
 
 import (

@@ -38,12 +38,6 @@ func (s MemCounterStore) Size() int64 {
 
 type MemStore map[string]string
 
-var _ KVInterface = new(MemStore)
-
-func NewKV() KVInterface {
-	return MemStore(make(map[string]string, 2))
-}
-
 func (s MemStore) Set(key, val string) {
 	s[key] = val
 }

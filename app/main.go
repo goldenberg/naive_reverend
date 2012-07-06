@@ -22,7 +22,7 @@ func main() {
 	train := flag.String("t", "", "train using the data in this file")
 	evaluate := flag.String("e", "", "train using the data in this file")
 	ngram := flag.Int("n", 2, "ngram length")
-	corpus := flag.String("c", "", "corpus name")
+	corpus := flag.String("c", "name_match_en", "corpus name")
 
 	flag.Parse()
 

@@ -11,7 +11,3 @@ type Interface interface {
 	Size() int64
 }
 
-type KVInterface interface {
-	Set(key, val string)
-	Get(key string) (val string)
-}

@@ -1,54 +1,15 @@
 package model
 
 import (
-	"fmt"
 	counter "naive_reverend/counter"
 	distribution "naive_reverend/distribution"
 	store "naive_reverend/store"
 )
 
 const (
-	PRIOR = "prior"
-	CLASS = "class"
+	PRIOR = "__PRIOR__"
 )
 
-<<<<<<< HEAD
-=======
-type NGram []string
-
-/* Generate computes n-grams using a sliding window of size n. 
-The terms are pre-pended and extended with n - 1 BLANKs. */
-func Generate(terms []string, n int) (ngrams []NGram) {
-	if len(terms) == 0 {
-		return []NGram{}
-	}
-	ngrams = make([]NGram, 0)
-	for i := 0; i < len(terms)+n-1; i++ {
-		ngrams = append(ngrams, getNgram(terms, i, n))
-	}
-	return
-}
-
-func getNgram(terms []string, pos, n int) (ngram NGram) {
-	ngram = make(NGram, 0)
-	start := pos - n + 1
-
-	for i := start; i <= pos; i++ {
-		if i < 0 || i >= len(terms) {
-			ngram = append(ngram, BLANK)
-		} else {
-			ngram = append(ngram, terms[i])
-		}
-	}
-	return
-}
-
-/* String joins the n-gram together with spaces. */
-func (ng NGram) String() string {
-	return strings.Join(ng, " ")
-}
-
->>>>>>> pipeline_requests
 type NGramModel struct {
 	N int
 	s store.Interface
@@ -64,7 +25,7 @@ func NewNGramModel(s store.Interface, n int) *NGramModel {
  * Counter of number of instances in training set. i.e. N_c
  */
 func (m *NGramModel) priorCounter() (c counter.Interface, ok bool) {
-	return m.fetch(PRIOR, "")
+	return m.s.Fetch(PRIOR)
 }
 
 /*
@@ -87,35 +48,16 @@ func (m *NGramModel) Bins() int {
 	return 0
 }
 
-func (m *NGramModel) fetch(prefix, ngram string) (c counter.Interface, ok bool) {
-	key := fmt.Sprintf("%v:%v", prefix, ngram)
-	fmt.Println("looking up", key)
-	c, ok = m.s.Fetch(key)
-	return
+
+func (m *NGramModel) incr(feature, class string, incr int64) int64 {
+	return m.s.IncrN(feature, class, incr)
 }
 
-func (m *NGramModel) incr(prefix, numerator, denominator string, incr int64) int64 {
-	key := fmt.Sprintf("%v:%v", prefix, numerator)
-	return m.s.IncrN(key, denominator, incr)
-}
-
-<<<<<<< HEAD
-=======
 /*
  * Lookup an n-gram's frequency across all labels, i.e. C(w_1 ... w_n)
  */
->>>>>>> pipeline_requests
 func (m *NGramModel) classLookup(ngram NGram) (c counter.Interface, ok bool) {
-	return m.fetch(CLASS, ngram.String())
-}
-
-func (m *NGramModel) incrPrior(class string, incr int64) {
-	// Increment "prior:", class
-	m.incr(PRIOR, "", class, incr)
-}
-
-func (m *NGramModel) incrClasses(ngram NGram, class string, incr int64) {
-	m.incr(CLASS, ngram.String(), class, incr)
+	return m.s.Fetch(ngram.String())
 }
 
 /*
@@ -143,10 +85,10 @@ func (m *NGramModel) ClassCount() int {
 /* Train adds a new datum to the corpus by incrementing counts for 
 all of its ngrams. */
 func (m *NGramModel) Train(datum *Datum) {
-	m.incrPrior(datum.Class, datum.Count)
+	m.incr(PRIOR, datum.Class, datum.Count)
 	for n := 1; n <= m.N; n++ {
 		for _, ngram := range Generate(datum.Features, n) {
-			m.incrClasses(ngram, datum.Class, datum.Count)
+			m.incr(ngram.String(), datum.Class, datum.Count)
 		}
 	}
 }

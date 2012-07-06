@@ -35,9 +35,7 @@ func Multiply(a, b Interface) Interface {
 // Divide two distributions by subtracting their log probabilities.
 func Divide(a, b Interface) Interface {
 	logProbs := make(map[string]float64)
-	fmt.Println("Divide a:", a, "b:", b)
 	for k := range mergeKeys(a.Keys(), b.Keys()) {
-		// fmt.Println("LogGet key:", k, "d:", d.LogGet(k), "o:", d.LogGet(k))
 		logProbs[k] = a.LogGet(k) - b.LogGet(k)
 	}
 	return &DerivedDistribution{logProbs}
@@ -62,11 +60,12 @@ func JSON(d Interface) (out map[string]float64) {
 	return TopN(d, 10)
 }
 
+// ArgMax finds the key with the highest probability.
 func ArgMax(d Interface) (maxKey string, maxProb float64) {
-	maxProb = nil
+	maxProb = math.Inf(-1)
 	for _, k := range d.Keys() {
 		p := d.Get(k)
-		if maxProb == nil || p > maxProb {
+		if p > maxProb {
 			maxKey = k
 			maxProb = p
 		}
@@ -79,15 +78,15 @@ type stringFloatPair struct {
 	val float64
 }
 
-type StringFloatSlice []*stringFloatPair
+type stringFloatSlice []*stringFloatPair
 
-func (s StringFloatSlice) Len() int           { return len(s) }
-func (s StringFloatSlice) Less(i, j int) bool { return s[i].val < s[j].val }
-func (s StringFloatSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s stringFloatSlice) Len() int           { return len(s) }
+func (s stringFloatSlice) Less(i, j int) bool { return s[i].val < s[j].val }
+func (s stringFloatSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
-/* Sort the keys and values and return the top N classes and their probabilities. */
+// TopN sort sthe keys and values and returns the top N classes and their probabilities.
 func TopN(d Interface, n int) (out map[string]float64) {
-	sorted := make(StringFloatSlice, 0)
+	sorted := make(stringFloatSlice, 0)
 	for _, k := range d.Keys() {
 		sorted = append(sorted, &stringFloatPair{k, d.Get(k)})
 	}
@@ -104,6 +103,7 @@ func TopN(d Interface, n int) (out map[string]float64) {
 	return
 }
 
+// Sum returns the sum of all of the probabilities.
 func Sum(d Interface) (sum float64) {
 	for _, k := range d.Keys() {
 		sum += d.Get(k)
@@ -111,7 +111,9 @@ func Sum(d Interface) (sum float64) {
 	return
 }
 
+// Normalize returns a new Interface where the probabilities sum to 1.
 func Normalize(d Interface) Interface {
+	// XXX: This is subject to floating point error.
 	logProbs := make(map[string]float64)
 	sum := Sum(d)
 	for _, k := range d.Keys() {

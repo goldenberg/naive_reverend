@@ -13,7 +13,6 @@ type RedisStore struct {
 }
 
 var _ Interface = new(RedisStore)
-var _ KVInterface = new(RedisStore)
 
 func NewRedisStore(keyPrefix string) Interface {
 	client := godis.New("", 0, "")
@@ -42,7 +41,7 @@ func stringMapToIntMap(strMap map[string]string) (out map[string]int64) {
 	for k, v := range strMap {
 		i, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
-			fmt.Println("err: ", err)
+			panic(err)
 		}
 		out[k] = i
 	}
@@ -83,7 +82,7 @@ func (s *RedisStore) Get(key string) (val string) {
 func (s *RedisStore) Set(key, val string) {
 	err := s.client.Set(s.dbKey(key), val)
 	if err != nil {
-		panic("couldn't Get")
+		panic("couldn't Set")
 	}
 	return
 }

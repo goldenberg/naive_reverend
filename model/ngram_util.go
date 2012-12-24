@@ -7,6 +7,7 @@ import (
 const BLANK = "_"
 
 type NGram []string
+
 /* Generate computes n-grams using a sliding window of size n. 
 The terms are pre-pended and extended with n - 1 BLANKs. */
 func Generate(terms []string, n int) (ngrams []NGram) {

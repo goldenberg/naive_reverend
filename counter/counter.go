@@ -1,8 +1,8 @@
 package counter
 
 import (
-	"sync"
 	"fmt"
+	"sync"
 )
 
 type Interface interface {

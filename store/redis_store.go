@@ -3,7 +3,7 @@ package store
 import (
 	"fmt"
 	godis "github.com/simonz05/godis"
-	counter "naive_reverend/counter"
+	counter "github.com/goldenberg/naive_reverend/counter"
 	"strconv"
 )
 

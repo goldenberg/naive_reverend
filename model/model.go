@@ -2,7 +2,7 @@ package model
 
 import (
 	// `fmt`
-	distribution "naive_reverend/distribution"
+	distribution "github.com/goldenberg/naive_reverend/distribution"
 )
 
 type Datum struct {

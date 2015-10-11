@@ -1,7 +1,7 @@
 package store
 
 import (
-	counter "naive_reverend/counter"
+	counter "github.com/goldenberg/naive_reverend/counter"
 )
 
 type MemCounterStore map[string]counter.Interface

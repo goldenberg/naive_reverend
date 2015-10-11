@@ -1,4 +1,4 @@
-include $(GOROOT)/src/Make.inc
+#include $(GOROOT)/src/Make.inc
 
 all:
 	gomake -C counter

@@ -1,9 +1,9 @@
 package model
 
 import (
-	counter "naive_reverend/counter"
-	distribution "naive_reverend/distribution"
-	store "naive_reverend/store"
+	counter "github.com/goldenberg/naive_reverend/counter"
+	distribution "github.com/goldenberg/naive_reverend/distribution"
+	store "github.com/goldenberg/naive_reverend/store"
 )
 
 const (

@@ -2,7 +2,7 @@ package distribution
 
 import (
 	"math"
-	counter "naive_reverend/counter"
+	counter "github.com/goldenberg/naive_reverend/counter"
 )
 
 type Laplacian struct {

@@ -1,8 +1,8 @@
 package main
 
 import (
-	model "naive_reverend/model"
-	store "naive_reverend/store"
+	model "github.com/goldenberg/naive_reverend/model"
+	store "github.com/goldenberg/naive_reverend/store"
 	"net/http"
 	"strconv"
 	"strings"

@@ -6,9 +6,9 @@ import (
 	"strings"
 	// corpus "naive_reverend/corpus"
 	"fmt"
-	distribution "naive_reverend/distribution"
-	model "naive_reverend/model"
-	store "naive_reverend/store"
+	distribution "github.com/goldenberg/naive_reverend/distribution"
+	model "github.com/goldenberg/naive_reverend/model"
+	store "github.com/goldenberg/naive_reverend/store"
 	"net/http"
 )
 

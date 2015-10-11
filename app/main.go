@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"io"
 	"log"
-	distribution "naive_reverend/distribution"
-	model "naive_reverend/model"
-	store "naive_reverend/store"
+	distribution "github.com/goldenberg/naive_reverend/distribution"
+	model "github.com/goldenberg/naive_reverend/model"
+	store "github.com/goldenberg/naive_reverend/store"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -20,9 +20,9 @@ import (
 func main() {
 	profile := flag.Bool("p", false, "write profiles to ./")
 	train := flag.String("t", "", "train using the data in this file")
-	evaluate := flag.String("e", "", "train using the data in this file")
+	evaluate := flag.String("e", "", "evaluate using the data in this file")
 	ngram := flag.Int("n", 2, "ngram length")
-	corpus := flag.String("c", "name_match_en", "corpus name")
+	corpus := flag.String("c", "review_polarity", "corpus name")
 
 	flag.Parse()
 
@@ -98,7 +98,6 @@ func DumpProfiles() {
 
 func Serve(nb model.Interface, p *store.Pool, quit chan bool) {
 	fmt.Println("serving")
-	http.HandleFunc("/hello", HelloServer)
 
 	// Will eventually be /corpus/classify, /corpus/train, and /corpus/params
 	http.Handle("/classify", ClassifyHandler{p})
@@ -117,10 +116,6 @@ func ServeDebug() {
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
-}
-
-func HelloServer(w http.ResponseWriter, req *http.Request) {
-	io.WriteString(w, "hello, world!")
 }
 
 func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {

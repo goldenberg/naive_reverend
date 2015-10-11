@@ -3,7 +3,7 @@
 package store
 
 import (
-	counter "naive_reverend/counter"
+	counter "github.com/goldenberg/naive_reverend/counter"
 )
 
 // A type that stores a set of counters that can be fetched and incremented by

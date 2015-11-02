@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
-	"log"
 	distribution "github.com/goldenberg/naive_reverend/distribution"
 	model "github.com/goldenberg/naive_reverend/model"
 	store "github.com/goldenberg/naive_reverend/store"
+	"io"
+	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -36,7 +36,7 @@ func main() {
 	quitServer := make(chan bool)
 
 	go ServeDebug()
-	go Serve(nb, pool, quitServer)
+	go Serve(pool, quitServer)
 
 	if *train != "" {
 		fmt.Println("Training on", *train)
@@ -85,6 +85,7 @@ func Evaluate(evalData chan *model.Datum, nb model.Interface) {
 	fmt.Println(accuracy*100., "Got", correct, "correct and", wrong, "wrong.")
 }
 
+// DumpProfiles writes a memory profile to ./memprofile.
 func DumpProfiles() {
 	f, err := os.Create("./memprofile")
 	if err != nil {
@@ -96,10 +97,9 @@ func DumpProfiles() {
 	return
 }
 
-func Serve(nb model.Interface, p *store.Pool, quit chan bool) {
-	fmt.Println("serving")
-
-	// Will eventually be /corpus/classify, /corpus/train, and /corpus/params
+// Serve registers the classify and train handlers, which access data using
+// the passed store.Pool.
+func Serve(p *store.Pool, quit chan bool) {
 	http.Handle("/classify", ClassifyHandler{p})
 	http.Handle("/train", TrainHandler{p})
 
@@ -110,6 +110,8 @@ func Serve(nb model.Interface, p *store.Pool, quit chan bool) {
 	quit <- true
 }
 
+// ServeDebug opens port 6060 for profiling and debugging.  By importing "net/http/pprof"
+// as _, we'll automatically be serving at /debug/pprof/heap, etc.
 func ServeDebug() {
 	fmt.Println("starting debug server")
 	err := http.ListenAndServe(":6060", nil)
@@ -118,6 +120,8 @@ func ServeDebug() {
 	}
 }
 
+// ReadData reads a text file of training or evaluation data where each line
+// is a json encoded model.Datum.
 func ReadData(reader io.Reader, out chan *model.Datum, quit chan bool) {
 	jsonDecoder := json.NewDecoder(reader)
 	i := 0

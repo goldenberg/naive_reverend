@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
-	// corpus "naive_reverend/corpus"
 	"fmt"
 	distribution "github.com/goldenberg/naive_reverend/distribution"
 	model "github.com/goldenberg/naive_reverend/model"
@@ -20,6 +19,7 @@ type ClassifyHandler struct {
 	pool *store.Pool
 }
 
+// ServeHTTP classifies 
 func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	query := req.FormValue("q")
@@ -31,7 +31,7 @@ func (h ClassifyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(req)
 	m := model.NewNGramModel(h.pool.Get(corpus), n)
 
-	features := strings.Split(query, ",")
+	features := strings.Split(query, " ")
 	estimator, explain := m.Classify(features)
 	prediction, _ := distribution.ArgMax(estimator)
 	output := map[string]interface{}{
